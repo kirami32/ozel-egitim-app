@@ -27,6 +27,19 @@ export default async function VeliOgrenciDetayPage({
         },
       },
       attendanceRecords: { orderBy: { tarih: "desc" } },
+      hedefler: {
+        orderBy: { createdAt: "desc" },
+        include: {
+          ilerlemeKayitlari: {
+            orderBy: { tarih: "desc" },
+            include: { ekleyen: { select: { adSoyad: true } } },
+          },
+        },
+      },
+      veliNotlari: {
+        orderBy: { createdAt: "desc" },
+        include: { yazar: { select: { id: true, adSoyad: true, avatarSurum: true } } },
+      },
     },
   });
 
@@ -57,6 +70,10 @@ export default async function VeliOgrenciDetayPage({
         taniKategorisi={ogrenci.taniKategorisi}
         sessionLogs={ogrenci.sessionLogs}
         attendanceRecords={ogrenci.attendanceRecords}
+        hedefler={ogrenci.hedefler}
+        veliNotlari={ogrenci.veliNotlari}
+        mevcutKullaniciId={kullanici.id}
+        mevcutKullaniciRolu={kullanici.rol}
         ogretmenAdiGoster
         ustBaslikSagi={
           <Button asChild>

@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { oturumGerekli } from "@/lib/rbac";
-import {
-  kullaniciAvatariGorulebilirMi,
-  ogrenciAvatariGorulebilirMi,
-} from "@/lib/avatar-yetki";
+import { kullaniciAvatariGorulebilirMi } from "@/lib/avatar-yetki";
+import { ogrenciGorulebilirMi } from "@/lib/ogrenci-erisim";
 
 /**
  * Profil fotoğraflarını servis eder. Fotoğraflar veritabanında data URL olarak
@@ -31,7 +29,7 @@ export async function GET(
   const gorebilir =
     tur === "kullanici"
       ? await kullaniciAvatariGorulebilirMi(izleyen, id)
-      : await ogrenciAvatariGorulebilirMi(izleyen, id);
+      : await ogrenciGorulebilirMi(izleyen, id);
 
   if (!gorebilir) {
     return new NextResponse("Yetkisiz", { status: 403 });

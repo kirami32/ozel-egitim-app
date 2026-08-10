@@ -23,6 +23,29 @@ enum AttendanceStatus {
   IZINLI
 }
 
+enum HedefKategori {
+  ILETISIM
+  OZ_BAKIM
+  AKADEMIK
+  SOSYAL
+  MOTOR
+  DAVRANIS
+}
+
+enum HedefDurum {
+  AKTIF
+  TAMAMLANDI
+  ERTELENDI
+}
+
+// MEB BEP formlarindaki standart basari duzeyi olcegi
+enum BasariSeviyesi {
+  BAGIMSIZ
+  SOZEL_IPUCUYLA
+  FIZIKSEL_YARDIMLA
+  YAPAMADI
+}
+
 model Institution {
   id        String   @id @default(cuid())
   ad        String
@@ -69,6 +92,10 @@ model User {
 
   attendanceRecordsCreated Attendance[] @relation("AttendanceRecorder")
 
+  hedeflerOlusturulan Hedef[]         @relation("HedefOlusturan")
+  ilerlemeKayitlari   HedefIlerleme[] @relation("IlerlemeEkleyen")
+  veliNotlariYazilan  ParentNote[]    @relation("VeliNotuYazari")
+
   @@index([institutionId])
   @@map("users")
 }
@@ -114,6 +141,8 @@ model Student {
 
   sessionLogs SessionLog[]
   attendanceRecords Attendance[]
+  hedefler Hedef[]
+  veliNotlari ParentNote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -144,6 +173,71 @@ model Attendance {
   @@index([studentId])
   @@index([tarih])
   @@map("attendance_records")
+}
+
+// Bireysellestirilmis Egitim Programi (BEP) hedefi
+model Hedef {
+  id        String        @id @default(cuid())
+  baslik    String
+  aciklama  String?
+  kategori  HedefKategori
+  durum     HedefDurum    @default(AKTIF)
+  hedefTarihi     DateTime?
+  tamamlanmaTarihi DateTime?
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  olusturanId String
+  olusturan   User   @relation("HedefOlusturan", fields: [olusturanId], references: [id], onDelete: Cascade)
+
+  ilerlemeKayitlari HedefIlerleme[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentId])
+  @@index([durum])
+  @@map("hedefler")
+}
+
+// Bir hedefe dogru tek bir ilerleme/degerlendirme kaydi
+model HedefIlerleme {
+  id     String         @id @default(cuid())
+  tarih  DateTime       @default(now())
+  seviye BasariSeviyesi
+  notu   String?
+
+  hedefId String
+  hedef   Hedef  @relation(fields: [hedefId], references: [id], onDelete: Cascade)
+
+  ekleyenId String
+  ekleyen   User   @relation("IlerlemeEkleyen", fields: [ekleyenId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([hedefId])
+  @@index([tarih])
+  @@map("hedef_ilerleme_kayitlari")
+}
+
+// Ogretmen/mudurden veliye tek yonlu, hizli bilgilendirme notu
+model ParentNote {
+  id      String  @id @default(cuid())
+  icerik  String
+  onemli  Boolean @default(false)
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  yazarId String
+  yazar   User   @relation("VeliNotuYazari", fields: [yazarId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([studentId])
+  @@index([createdAt])
+  @@map("parent_notes")
 }
 
 model BehaviorTag {

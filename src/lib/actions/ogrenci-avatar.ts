@@ -5,7 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { oturumGerekli } from "@/lib/rbac";
 import { denetimKaydiOlustur } from "@/lib/audit";
-import { ogrenciAvatariDuzenlenebilirMi } from "@/lib/avatar-yetki";
+import { ogrenciYonetilebilirMi } from "@/lib/ogrenci-erisim";
 import { AZAMI_AVATAR_UZUNLUGU } from "@/lib/avatar";
 
 const avatarSemasi = z
@@ -23,7 +23,7 @@ export async function ogrenciAvatariKaydet(
 ) {
   const kullanici = await oturumGerekli();
 
-  const yetkili = await ogrenciAvatariDuzenlenebilirMi(kullanici, ogrenciId);
+  const yetkili = await ogrenciYonetilebilirMi(kullanici, ogrenciId);
   if (!yetkili) {
     throw new Error("Bu öğrencinin fotoğrafını değiştirme yetkiniz yok.");
   }

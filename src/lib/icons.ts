@@ -14,6 +14,8 @@ import {
   PlusCircle,
   CalendarCheck,
   CalendarX2,
+  Target,
+  MessageCircleHeart,
   type LucideIcon,
 } from "lucide-react";
 
@@ -33,6 +35,8 @@ export const IKON_HARITASI = {
   PlusCircle,
   CalendarCheck,
   CalendarX2,
+  Target,
+  MessageCircleHeart,
 } satisfies Record<string, LucideIcon>;
 
 export type IkonAdi = keyof typeof IKON_HARITASI;

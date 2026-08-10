@@ -16,24 +16,28 @@ export default async function OgretmenAnaSayfa() {
   const bugunBaslangic = new Date();
   bugunBaslangic.setHours(0, 0, 0, 0);
 
-  const [ogrenciler, bugunkuKayitSayisi, toplamKayitSayisi] = await Promise.all([
-    prisma.student.findMany({
-      where: { classroom: { teacherId: kullanici.id }, aktifMi: true },
-      orderBy: { adSoyad: "asc" },
-      include: {
-        classroom: { select: { ad: true } },
-        sessionLogs: {
-          where: { teacherId: kullanici.id },
-          orderBy: { tarih: "desc" },
-          take: 1,
+  const [ogrenciler, bugunkuKayitSayisi, toplamKayitSayisi, aktifHedefSayisi] =
+    await Promise.all([
+      prisma.student.findMany({
+        where: { classroom: { teacherId: kullanici.id }, aktifMi: true },
+        orderBy: { adSoyad: "asc" },
+        include: {
+          classroom: { select: { ad: true } },
+          sessionLogs: {
+            where: { teacherId: kullanici.id },
+            orderBy: { tarih: "desc" },
+            take: 1,
+          },
         },
-      },
-    }),
-    prisma.sessionLog.count({
-      where: { teacherId: kullanici.id, tarih: { gte: bugunBaslangic } },
-    }),
-    prisma.sessionLog.count({ where: { teacherId: kullanici.id } }),
-  ]);
+      }),
+      prisma.sessionLog.count({
+        where: { teacherId: kullanici.id, tarih: { gte: bugunBaslangic } },
+      }),
+      prisma.sessionLog.count({ where: { teacherId: kullanici.id } }),
+      prisma.hedef.count({
+        where: { durum: "AKTIF", student: { classroom: { teacherId: kullanici.id } } },
+      }),
+    ]);
 
   return (
     <div className="space-y-6">
@@ -52,10 +56,11 @@ export default async function OgretmenAnaSayfa() {
         }
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard baslik="Öğrencilerim" deger={ogrenciler.length} icon="Users" renk="primary" index={0} />
         <StatCard baslik="Bugün Girilen Kayıt" deger={bugunkuKayitSayisi} icon="PlusCircle" renk="accent" index={1} />
         <StatCard baslik="Toplam Ders Kaydı" deger={toplamKayitSayisi} icon="History" renk="chart-3" index={2} />
+        <StatCard baslik="Aktif Hedef" deger={aktifHedefSayisi} icon="Target" renk="chart-4" index={3} />
       </div>
 
       {ogrenciler.length === 0 ? (

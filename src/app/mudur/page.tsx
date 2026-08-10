@@ -15,14 +15,24 @@ export default async function MudurGenelBakis() {
   const kullanici = await oturumGerekli(["MUDUR"]);
   const institutionId = kullanici.institutionId!;
 
-  const [ogretmenSayisi, ogrenciSayisi, sinifSayisi, verimlilikOrt, sonDersKayitlari, tumKayitlar] =
-    await Promise.all([
+  const [
+    ogretmenSayisi,
+    ogrenciSayisi,
+    sinifSayisi,
+    verimlilikOrt,
+    aktifHedefSayisi,
+    sonDersKayitlari,
+    tumKayitlar,
+  ] = await Promise.all([
       prisma.user.count({ where: { institutionId, rol: "OGRETMEN" } }),
       prisma.student.count({ where: { institutionId } }),
       prisma.classroom.count({ where: { institutionId } }),
       prisma.sessionLog.aggregate({
         where: { student: { institutionId } },
         _avg: { verimlilikPuani: true },
+      }),
+      prisma.hedef.count({
+        where: { durum: "AKTIF", student: { institutionId } },
       }),
       prisma.sessionLog.findMany({
         where: { student: { institutionId } },
@@ -80,7 +90,7 @@ export default async function MudurGenelBakis() {
         aciklama="Kurumunuzun güncel durumu ve son aktiviteler."
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
         <StatCard baslik="Öğretmen" deger={ogretmenSayisi} icon="Users" renk="primary" index={0} />
         <StatCard baslik="Öğrenci" deger={ogrenciSayisi} icon="GraduationCap" renk="accent" index={1} />
         <StatCard baslik="Sınıf" deger={sinifSayisi} icon="School" renk="chart-3" index={2} />
@@ -91,6 +101,7 @@ export default async function MudurGenelBakis() {
           renk="chart-4"
           index={3}
         />
+        <StatCard baslik="Aktif Hedef" deger={aktifHedefSayisi} icon="Target" renk="secondary" index={4} />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

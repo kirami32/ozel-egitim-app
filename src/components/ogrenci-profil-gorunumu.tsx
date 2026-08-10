@@ -8,9 +8,17 @@ import { EmptyState } from "@/components/empty-state";
 import { VerimlilikTrendChart } from "@/components/verimlilik-trend-chart";
 import { DavranisDagilimChart } from "@/components/davranis-dagilim-chart";
 import { DevamDurumuChart } from "@/components/devam-durumu-chart";
+import { HedeflerBolumu } from "@/components/hedefler-bolumu";
+import { VeliNotlariBolumu } from "@/components/veli-notlari-bolumu";
 import { DEVAM_DURUM_META, devamOraniHesapla } from "@/lib/devam";
 import { cn } from "@/lib/utils";
-import type { AttendanceStatus } from "@/generated/prisma/enums";
+import type {
+  AttendanceStatus,
+  BasariSeviyesi,
+  HedefDurum,
+  HedefKategori,
+  Role,
+} from "@/generated/prisma/enums";
 
 interface DavranisEtiketiIliski {
   behaviorTagId: string;
@@ -34,6 +42,32 @@ interface DevamKaydi {
   aciklama: string | null;
 }
 
+interface HedefIlerlemeKaydi {
+  id: string;
+  tarih: Date;
+  seviye: BasariSeviyesi;
+  notu: string | null;
+  ekleyen: { adSoyad: string };
+}
+
+interface HedefVerisi {
+  id: string;
+  baslik: string;
+  aciklama: string | null;
+  kategori: HedefKategori;
+  durum: HedefDurum;
+  hedefTarihi: Date | null;
+  ilerlemeKayitlari: HedefIlerlemeKaydi[];
+}
+
+interface VeliNotuVerisi {
+  id: string;
+  icerik: string;
+  onemli: boolean;
+  createdAt: Date;
+  yazar: { id: string; adSoyad: string; avatarSurum: Date | null };
+}
+
 interface OgrenciProfilGorunumuProps {
   ogrenciId: string;
   adSoyad: string;
@@ -41,10 +75,19 @@ interface OgrenciProfilGorunumuProps {
   veliAdi?: string | null;
   taniKategorisi: string | null;
   avatarSurum?: Date | null;
-  /** Personel için true; veli fotoğrafı yalnızca görüntüler. */
+  /** Fotoğraf yükleyebilir mi — öğretmen/müdür/admin. Veli yalnızca görüntüler. */
   avatarDuzenlenebilir?: boolean;
+  /**
+   * Hedef/BEP ve veli notu ekleyebilir mi — yalnızca öğretmen/müdür.
+   * Süper admin bu platformda sadece izler, içerik üretmez.
+   */
+  notVeHedefDuzenlenebilir?: boolean;
   sessionLogs: DersKaydi[];
   attendanceRecords?: DevamKaydi[];
+  hedefler?: HedefVerisi[];
+  veliNotlari?: VeliNotuVerisi[];
+  mevcutKullaniciId: string;
+  mevcutKullaniciRolu: Role;
   ustBaslikSagi?: React.ReactNode;
   ogretmenAdiGoster?: boolean;
 }
@@ -57,8 +100,13 @@ export function OgrenciProfilGorunumu({
   taniKategorisi,
   avatarSurum = null,
   avatarDuzenlenebilir = false,
+  notVeHedefDuzenlenebilir = false,
   sessionLogs,
   attendanceRecords = [],
+  hedefler = [],
+  veliNotlari = [],
+  mevcutKullaniciId,
+  mevcutKullaniciRolu,
   ustBaslikSagi,
   ogretmenAdiGoster = false,
 }: OgrenciProfilGorunumuProps) {
@@ -147,6 +195,20 @@ export function OgrenciProfilGorunumu({
           </div>
         )}
       </div>
+
+      <HedeflerBolumu
+        ogrenciId={ogrenciId}
+        hedefler={hedefler}
+        yonetilebilir={notVeHedefDuzenlenebilir}
+      />
+
+      <VeliNotlariBolumu
+        ogrenciId={ogrenciId}
+        notlar={veliNotlari}
+        yazilabilir={notVeHedefDuzenlenebilir}
+        mevcutKullaniciId={mevcutKullaniciId}
+        mevcutKullaniciRolu={mevcutKullaniciRolu}
+      />
 
       <Card className="border-border/60">
         <CardHeader>
