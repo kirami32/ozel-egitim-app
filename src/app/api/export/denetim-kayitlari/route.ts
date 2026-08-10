@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { denetimWhereUret } from "@/lib/denetim-sorgu";
@@ -7,7 +7,11 @@ import { csvOlustur, csvYaniti } from "@/lib/csv";
 
 /** Denetim kayıtları sayfasındaki filtrelerle uyumlu CSV export — en fazla 5000 satır. */
 export async function GET(request: NextRequest) {
-  await oturumGerekli(["SUPER_ADMIN"]);
+  try {
+    await oturumGerekli(["SUPER_ADMIN"]);
+  } catch {
+    return new NextResponse("Yetkisiz", { status: 401 });
+  }
 
   const params = request.nextUrl.searchParams;
   const where = denetimWhereUret({

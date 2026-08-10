@@ -1,10 +1,15 @@
+import { NextResponse } from "next/server";
 import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { csvOlustur, csvYaniti } from "@/lib/csv";
 
 /** Süper admin için kurum bazlı özet rapor — CSV. */
 export async function GET() {
-  await oturumGerekli(["SUPER_ADMIN"]);
+  try {
+    await oturumGerekli(["SUPER_ADMIN"]);
+  } catch {
+    return new NextResponse("Yetkisiz", { status: 401 });
+  }
 
   const kurumlar = await prisma.institution.findMany({
     orderBy: { ad: "asc" },
