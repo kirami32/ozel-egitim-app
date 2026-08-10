@@ -10,6 +10,8 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // Migrate işlemleri advisory lock kullanır; Neon'un pooled (pgbouncer) bağlantısı
+    // bunu desteklemez, bu yüzden CLI için doğrudan (unpooled) bağlantıyı kullan.
+    url: process.env["DATABASE_URL_UNPOOLED"] ?? process.env["DATABASE_URL"],
   },
 });
