@@ -52,7 +52,10 @@ export default async function OgrenciProfilPage({
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <OgrenciProfilGorunumu
+            ogrenciId={ogrenci.id}
             adSoyad={ogrenci.adSoyad}
+            avatarSurum={ogrenci.avatarSurum}
+            avatarDuzenlenebilir
             sinifAdi={ogrenci.classroom?.ad ?? null}
             veliAdi={ogrenci.veli?.adSoyad}
             taniKategorisi={ogrenci.taniKategorisi}

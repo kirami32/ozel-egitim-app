@@ -166,6 +166,39 @@
   pointer-events: none;
 }
 
+/* --- Görünüm tercihleri (Ayarlar sayfasından yönetilir) --- */
+
+/* Yoğun görünüm: kart iç boşluklarını ve satır aralıklarını daraltır, böylece
+   ekrana belirgin biçimde daha fazla satır sığar. */
+.yogun-gorunum {
+  --radius: 0.7rem;
+}
+
+.yogun-gorunum [data-slot="card-content"],
+.yogun-gorunum [data-slot="card-header"] {
+  padding-inline: 1rem;
+  padding-block: 0.75rem;
+}
+
+.yogun-gorunum main {
+  padding: 1rem;
+}
+
+.yogun-gorunum .space-y-8 > * + * {
+  margin-top: 1.25rem;
+}
+
+/* Hareketi azalt: kullanıcı tercihi. Sistem düzeyindeki prefers-reduced-motion
+   ayarı da ayrıca aşağıda ele alınıyor. */
+.hareket-azalt *,
+.hareket-azalt *::before,
+.hareket-azalt *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
 /* --- Giriş sayfası arka plan katmanı --- */
 
 /* Çok soluk nokta deseni, kenarlara doğru radyal olarak siliniyor. */

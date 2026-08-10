@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
+import { SayfaBasligi } from "@/components/sayfa-basligi";
+import { KisiAvatari } from "@/components/kisi-avatari";
+import { RolRozeti } from "@/components/rol-rozeti";
 import { KullaniciEkleDialog } from "@/components/kullanici-ekle-dialog";
 import {
   Table,
@@ -13,13 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const ROL_ETIKETLERI: Record<string, string> = {
-  SUPER_ADMIN: "Süper Admin",
-  MUDUR: "Kurum Müdürü",
-  OGRETMEN: "Öğretmen",
-  VELI: "Veli",
-};
 
 export default async function KullanicilarPage() {
   await oturumGerekli(["SUPER_ADMIN"]);
@@ -33,6 +29,7 @@ export default async function KullanicilarPage() {
         email: true,
         rol: true,
         aktifMi: true,
+        avatarSurum: true,
         institution: { select: { ad: true } },
       },
     }),
@@ -45,18 +42,18 @@ export default async function KullanicilarPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Kullanıcılar</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Sistemdeki tüm kullanıcıları görüntüleyin.
-          </p>
-        </div>
-        <KullaniciEkleDialog
-          izinliRoller={["MUDUR", "OGRETMEN", "VELI"]}
-          kurumlar={kurumlar}
-        />
-      </div>
+      <SayfaBasligi
+        icon={Users}
+        renk="accent"
+        baslik="Kullanıcılar"
+        aciklama="Sistemdeki tüm kullanıcıları görüntüleyin."
+        aksiyon={
+          <KullaniciEkleDialog
+            izinliRoller={["MUDUR", "OGRETMEN", "VELI"]}
+            kurumlar={kurumlar}
+          />
+        }
+      />
 
       {kullanicilar.length === 0 ? (
         <EmptyState
@@ -80,10 +77,20 @@ export default async function KullanicilarPage() {
               <TableBody>
                 {kullanicilar.map((k) => (
                   <TableRow key={k.id}>
-                    <TableCell className="font-medium">{k.adSoyad}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <KisiAvatari
+                          tur="kullanici"
+                          id={k.id}
+                          adSoyad={k.adSoyad}
+                          avatarSurum={k.avatarSurum}
+                        />
+                        <span className="font-medium">{k.adSoyad}</span>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-muted-foreground">{k.email}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{ROL_ETIKETLERI[k.rol]}</Badge>
+                      <RolRozeti rol={k.rol} />
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {k.institution?.ad ?? "—"}

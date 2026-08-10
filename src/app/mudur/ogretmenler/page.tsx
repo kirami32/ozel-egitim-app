@@ -3,7 +3,8 @@ import { Users } from "lucide-react";
 import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { SayfaBasligi } from "@/components/sayfa-basligi";
+import { KisiAvatari } from "@/components/kisi-avatari";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { KullaniciEkleDialog } from "@/components/kullanici-ekle-dialog";
@@ -19,25 +20,26 @@ export default async function OgretmenlerPage() {
       id: true,
       adSoyad: true,
       email: true,
+      avatarSurum: true,
       _count: { select: { classroomsTaught: true, sessionLogs: true } },
     },
   });
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Öğretmenler</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Kurumunuzdaki öğretmenleri yönetin.
-          </p>
-        </div>
-        <KullaniciEkleDialog
-          izinliRoller={["OGRETMEN"]}
-          sabitKurumId={institutionId}
-          butonMetni="Öğretmen Ekle"
-        />
-      </div>
+      <SayfaBasligi
+        icon={Users}
+        renk="accent"
+        baslik="Öğretmenler"
+        aciklama="Kurumunuzdaki öğretmenleri yönetin."
+        aksiyon={
+          <KullaniciEkleDialog
+            izinliRoller={["OGRETMEN"]}
+            sabitKurumId={institutionId}
+            butonMetni="Öğretmen Ekle"
+          />
+        }
+      />
 
       {ogretmenler.length === 0 ? (
         <EmptyState
@@ -52,11 +54,13 @@ export default async function OgretmenlerPage() {
               <Card className="border-border/60 transition-all hover:-translate-y-0.5 hover:shadow-md">
                 <CardContent className="p-5">
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-11 w-11">
-                      <AvatarFallback className="bg-primary/12 text-primary font-semibold">
-                        {ogretmen.adSoyad.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                    <KisiAvatari
+                      tur="kullanici"
+                      id={ogretmen.id}
+                      adSoyad={ogretmen.adSoyad}
+                      avatarSurum={ogretmen.avatarSurum}
+                      className="size-11"
+                    />
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold">{ogretmen.adSoyad}</p>
                       <p className="truncate text-xs text-muted-foreground">{ogretmen.email}</p>

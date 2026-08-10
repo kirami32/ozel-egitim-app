@@ -50,7 +50,9 @@ export default async function VeliOgrenciDetayPage({
       </Link>
 
       <OgrenciProfilGorunumu
+        ogrenciId={ogrenci.id}
         adSoyad={ogrenci.adSoyad}
+        avatarSurum={ogrenci.avatarSurum}
         sinifAdi={ogrenci.classroom?.ad ?? null}
         taniKategorisi={ogrenci.taniKategorisi}
         sessionLogs={ogrenci.sessionLogs}

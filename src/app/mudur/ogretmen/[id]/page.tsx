@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, School, ClipboardList, TrendingUp, ChevronRight } from "lucide-react";
+import { ArrowLeft, School, ClipboardList, ChevronRight } from "lucide-react";
 import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { StatCard } from "@/components/stat-card";

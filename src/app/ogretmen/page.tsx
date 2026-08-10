@@ -3,7 +3,8 @@ import { Users, ChevronRight, PlusCircle } from "lucide-react";
 import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { SayfaBasligi } from "@/components/sayfa-basligi";
+import { KisiAvatari } from "@/components/kisi-avatari";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
@@ -36,20 +37,20 @@ export default async function OgretmenAnaSayfa() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Bugün Dersi Olan Öğrenciler</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Ders sonrası kayıt eklemek için bir öğrenci seçin.
-          </p>
-        </div>
-        <Button asChild>
-          <Link href="/ogretmen/yeni-kayit">
-            <PlusCircle className="h-4 w-4" />
-            Yeni Kayıt Ekle
-          </Link>
-        </Button>
-      </div>
+      <SayfaBasligi
+        icon={Users}
+        renk="primary"
+        baslik="Bugün Dersi Olan Öğrenciler"
+        aciklama="Ders sonrası kayıt eklemek için bir öğrenci seçin."
+        aksiyon={
+          <Button asChild>
+            <Link href="/ogretmen/yeni-kayit">
+              <PlusCircle className="h-4 w-4" />
+              Yeni Kayıt Ekle
+            </Link>
+          </Button>
+        }
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard baslik="Öğrencilerim" deger={ogrenciler.length} icon="Users" renk="primary" index={0} />
@@ -71,11 +72,13 @@ export default async function OgretmenAnaSayfa() {
               <Link key={ogrenci.id} href={`/ogretmen/ogrenci/${ogrenci.id}`}>
                 <Card className="border-border/60 transition-all hover:-translate-y-0.5 hover:shadow-md">
                   <CardContent className="flex items-center gap-3 p-5">
-                    <Avatar className="h-11 w-11">
-                      <AvatarFallback className="bg-primary/12 text-primary font-semibold">
-                        {ogrenci.adSoyad.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                    <KisiAvatari
+                      tur="ogrenci"
+                      id={ogrenci.id}
+                      adSoyad={ogrenci.adSoyad}
+                      avatarSurum={ogrenci.avatarSurum}
+                      className="size-11"
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold">{ogrenci.adSoyad}</p>
                       <p className="truncate text-xs text-muted-foreground">

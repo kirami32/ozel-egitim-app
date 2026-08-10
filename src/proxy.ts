@@ -16,10 +16,23 @@ const ROL_ON_EK: Record<string, Role> = {
   "/veli": "VELI",
 };
 
+/** Rolden bağımsız, sadece oturum isteyen sayfalar. */
+const HESAP_ON_EKLERI = ["/profil", "/ayarlar"];
+
 export default auth((req) => {
   const { nextUrl } = req;
   const oturum = req.auth;
   const girisliMi = !!oturum?.user;
+
+  const girisSayfasinaGonder = () => {
+    const girisUrl = new URL("/giris", nextUrl);
+    girisUrl.searchParams.set("callbackUrl", nextUrl.pathname);
+    return NextResponse.redirect(girisUrl);
+  };
+
+  if (HESAP_ON_EKLERI.some((onEk) => nextUrl.pathname.startsWith(onEk))) {
+    return girisliMi ? NextResponse.next() : girisSayfasinaGonder();
+  }
 
   const korumaliOnEk = Object.keys(ROL_ON_EK).find((onEk) =>
     nextUrl.pathname.startsWith(onEk)
@@ -28,9 +41,7 @@ export default auth((req) => {
   if (!korumaliOnEk) return NextResponse.next();
 
   if (!girisliMi) {
-    const girisUrl = new URL("/giris", nextUrl);
-    girisUrl.searchParams.set("callbackUrl", nextUrl.pathname);
-    return NextResponse.redirect(girisUrl);
+    return girisSayfasinaGonder();
   }
 
   const gerekliRol = ROL_ON_EK[korumaliOnEk];
@@ -44,5 +55,12 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/admin/:path*", "/mudur/:path*", "/ogretmen/:path*", "/veli/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/mudur/:path*",
+    "/ogretmen/:path*",
+    "/veli/:path*",
+    "/profil/:path*",
+    "/ayarlar/:path*",
+  ],
 };

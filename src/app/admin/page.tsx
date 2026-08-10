@@ -1,12 +1,14 @@
 import Link from "next/link";
-import { Building2, ClipboardList } from "lucide-react";
+import { Building2, ClipboardList, LayoutDashboard } from "lucide-react";
 import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { StatCard } from "@/components/stat-card";
 import { EmptyState } from "@/components/empty-state";
+import { SayfaBasligi } from "@/components/sayfa-basligi";
+import { KisiAvatari } from "@/components/kisi-avatari";
+import { VerimlilikRozeti } from "@/components/verimlilik-rozeti";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default async function AdminGenelBakis() {
   await oturumGerekli(["SUPER_ADMIN"]);
@@ -32,7 +34,14 @@ export default async function AdminGenelBakis() {
       orderBy: { tarih: "desc" },
       take: 8,
       include: {
-        student: { select: { id: true, adSoyad: true, institution: { select: { ad: true } } } },
+        student: {
+          select: {
+            id: true,
+            adSoyad: true,
+            avatarSurum: true,
+            institution: { select: { ad: true } },
+          },
+        },
         teacher: { select: { adSoyad: true } },
       },
     }),
@@ -40,12 +49,12 @@ export default async function AdminGenelBakis() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Sistem Genel Bakış</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Platformdaki tüm kurumların ve kullanımın özeti.
-        </p>
-      </div>
+      <SayfaBasligi
+        icon={LayoutDashboard}
+        renk="primary"
+        baslik="Sistem Genel Bakış"
+        aciklama="Platformdaki tüm kurumların ve kullanımın özeti."
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard baslik="Toplam Kurum" deger={kurumSayisi} icon="Building2" renk="primary" index={0} />
@@ -69,9 +78,12 @@ export default async function AdminGenelBakis() {
             ) : (
               <div className="divide-y divide-border">
                 {sonKurumlar.map((kurum) => (
-                  <div key={kurum.id} className="flex items-center justify-between py-3">
-                    <div>
-                      <p className="text-sm font-medium">{kurum.ad}</p>
+                  <div key={kurum.id} className="flex items-center gap-3 py-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[oklch(0.68_0.12_195)] to-[oklch(0.58_0.11_205)] text-white shadow-sm">
+                      <Building2 className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{kurum.ad}</p>
                       <p className="text-xs text-muted-foreground">
                         {kurum._count.users} kullanıcı · {kurum._count.students} öğrenci
                       </p>
@@ -105,20 +117,20 @@ export default async function AdminGenelBakis() {
                     href={`/admin/ogrenci/${kayit.student.id}`}
                     className="flex items-center gap-3 py-3 hover:bg-muted/40 -mx-1 rounded-lg px-1"
                   >
-                    <Avatar className="h-9 w-9">
-                      <AvatarFallback className="bg-primary/12 text-primary text-xs font-semibold">
-                        {kayit.student.adSoyad.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                    <KisiAvatari
+                      tur="ogrenci"
+                      id={kayit.student.id}
+                      adSoyad={kayit.student.adSoyad}
+                      avatarSurum={kayit.student.avatarSurum}
+                      size="lg"
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{kayit.student.adSoyad}</p>
                       <p className="truncate text-xs text-muted-foreground">
                         {kayit.student.institution.ad} · {kayit.teacher.adSoyad}
                       </p>
                     </div>
-                    <div className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
-                      {kayit.verimlilikPuani}/10
-                    </div>
+                    <VerimlilikRozeti puan={kayit.verimlilikPuani} />
                   </Link>
                 ))}
               </div>

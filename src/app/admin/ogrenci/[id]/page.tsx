@@ -52,7 +52,10 @@ export default async function AdminOgrenciDetayPage({
       </Link>
 
       <OgrenciProfilGorunumu
+        ogrenciId={ogrenci.id}
         adSoyad={ogrenci.adSoyad}
+        avatarSurum={ogrenci.avatarSurum}
+        avatarDuzenlenebilir
         sinifAdi={ogrenci.classroom?.ad ?? null}
         veliAdi={ogrenci.veli?.adSoyad}
         taniKategorisi={ogrenci.taniKategorisi}

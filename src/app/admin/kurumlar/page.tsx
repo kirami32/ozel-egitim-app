@@ -3,6 +3,7 @@ import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/empty-state";
+import { SayfaBasligi } from "@/components/sayfa-basligi";
 import { YeniKurumDialog } from "./yeni-kurum-dialog";
 import { KurumDurumSwitch } from "./kurum-durum-switch";
 
@@ -16,15 +17,13 @@ export default async function KurumlarPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Kurumlar</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Sisteme kayıtlı tüm kurumları buradan yönetin.
-          </p>
-        </div>
-        <YeniKurumDialog />
-      </div>
+      <SayfaBasligi
+        icon={Building2}
+        renk="primary"
+        baslik="Kurumlar"
+        aciklama="Sisteme kayıtlı tüm kurumları buradan yönetin."
+        aksiyon={<YeniKurumDialog />}
+      />
 
       {kurumlar.length === 0 ? (
         <EmptyState
@@ -39,7 +38,7 @@ export default async function KurumlarPage() {
             <Card key={kurum.id} className="border-border/60">
               <CardContent className="p-5">
                 <div className="mb-3 flex items-start justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[oklch(0.68_0.12_195)] to-[oklch(0.58_0.11_205)] text-white shadow-sm">
                     <Building2 className="h-5 w-5" />
                   </div>
                   <KurumDurumSwitch kurumId={kurum.id} aktifMi={kurum.aktifMi} />

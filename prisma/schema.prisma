@@ -47,6 +47,11 @@ model User {
   sifreHash    String
   rol          Role
   aktifMi      Boolean  @default(true)
+  // Profil fotografi: istemcide 256x256 JPEG'e kucultulup data URL olarak saklanir.
+  // avatarSurum, fotografin varligini ve surumunu tutar; listeleme sorgulari
+  // 20KB'lik base64'u cekmeden sadece bu alani okuyup <img> src'sini kurabilir.
+  avatar       String?
+  avatarSurum  DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -94,6 +99,9 @@ model Student {
   taniKategorisi String?
   kayitTarihi    DateTime  @default(now())
   aktifMi        Boolean   @default(true)
+  // Profil fotografi: ogretmen/mudur/admin tarafindan yuklenir.
+  avatar         String?
+  avatarSurum    DateTime?
 
   institutionId String
   institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)

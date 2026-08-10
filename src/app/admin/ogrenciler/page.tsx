@@ -3,9 +3,10 @@ import { GraduationCap, ChevronRight } from "lucide-react";
 import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
+import { SayfaBasligi } from "@/components/sayfa-basligi";
+import { KisiAvatari } from "@/components/kisi-avatari";
 
 export default async function AdminOgrencilerPage() {
   await oturumGerekli(["SUPER_ADMIN"]);
@@ -21,13 +22,12 @@ export default async function AdminOgrencilerPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Tüm Öğrenciler</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Sistemdeki bütün kurumlara ait öğrenciler — profiline tıklayarak ders kayıtlarını,
-          grafiklerini ve geçmişini görüntüleyebilirsiniz.
-        </p>
-      </div>
+      <SayfaBasligi
+        icon={GraduationCap}
+        renk="yesil"
+        baslik="Tüm Öğrenciler"
+        aciklama="Sistemdeki bütün kurumlara ait öğrenciler — profiline tıklayarak ders kayıtlarını, grafiklerini ve geçmişini görüntüleyebilirsiniz."
+      />
 
       {ogrenciler.length === 0 ? (
         <EmptyState
@@ -41,11 +41,13 @@ export default async function AdminOgrencilerPage() {
             <Link key={ogrenci.id} href={`/admin/ogrenci/${ogrenci.id}`}>
               <Card className="border-border/60 transition-all hover:-translate-y-0.5 hover:shadow-md">
                 <CardContent className="flex items-center gap-3 p-5">
-                  <Avatar className="h-11 w-11">
-                    <AvatarFallback className="bg-accent/40 text-accent-foreground font-semibold">
-                      {ogrenci.adSoyad.slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <KisiAvatari
+                    tur="ogrenci"
+                    id={ogrenci.id}
+                    adSoyad={ogrenci.adSoyad}
+                    avatarSurum={ogrenci.avatarSurum}
+                    className="size-11"
+                  />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold">{ogrenci.adSoyad}</p>
                     <p className="truncate text-xs text-muted-foreground">

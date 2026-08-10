@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { Users, GraduationCap, School, TrendingUp, Tags } from "lucide-react";
+import { TrendingUp, Tags, LayoutDashboard } from "lucide-react";
 import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { StatCard } from "@/components/stat-card";
 import { EmptyState } from "@/components/empty-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { SayfaBasligi } from "@/components/sayfa-basligi";
+import { KisiAvatari } from "@/components/kisi-avatari";
+import { VerimlilikRozeti } from "@/components/verimlilik-rozeti";
 import { VerimlilikTrendChart } from "@/components/verimlilik-trend-chart";
 import { DavranisDagilimChart } from "@/components/davranis-dagilim-chart";
 
@@ -26,7 +28,10 @@ export default async function MudurGenelBakis() {
         where: { student: { institutionId } },
         orderBy: { tarih: "desc" },
         take: 6,
-        include: { student: { select: { adSoyad: true } }, teacher: { select: { adSoyad: true } } },
+        include: {
+          student: { select: { id: true, adSoyad: true, avatarSurum: true } },
+          teacher: { select: { adSoyad: true } },
+        },
       }),
       prisma.sessionLog.findMany({
         where: { student: { institutionId } },
@@ -68,12 +73,12 @@ export default async function MudurGenelBakis() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Kurum Genel Bakış</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Kurumunuzun güncel durumu ve son aktiviteler.
-        </p>
-      </div>
+      <SayfaBasligi
+        icon={LayoutDashboard}
+        renk="primary"
+        baslik="Kurum Genel Bakış"
+        aciklama="Kurumunuzun güncel durumu ve son aktiviteler."
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard baslik="Öğretmen" deger={ogretmenSayisi} icon="Users" renk="primary" index={0} />
@@ -145,11 +150,13 @@ export default async function MudurGenelBakis() {
             <div className="divide-y divide-border">
               {sonDersKayitlari.map((kayit) => (
                 <div key={kayit.id} className="flex items-center gap-3 py-3">
-                  <Avatar className="h-9 w-9">
-                    <AvatarFallback className="bg-primary/12 text-primary text-xs font-semibold">
-                      {kayit.student.adSoyad.slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <KisiAvatari
+                    tur="ogrenci"
+                    id={kayit.student.id}
+                    adSoyad={kayit.student.adSoyad}
+                    avatarSurum={kayit.student.avatarSurum}
+                    size="lg"
+                  />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{kayit.student.adSoyad}</p>
                     <p className="truncate text-xs text-muted-foreground">
@@ -157,9 +164,7 @@ export default async function MudurGenelBakis() {
                       {new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium" }).format(kayit.tarih)}
                     </p>
                   </div>
-                  <div className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
-                    {kayit.verimlilikPuani}/10
-                  </div>
+                  <VerimlilikRozeti puan={kayit.verimlilikPuani} />
                 </div>
               ))}
             </div>

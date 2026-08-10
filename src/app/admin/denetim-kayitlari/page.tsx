@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
+import { SayfaBasligi } from "@/components/sayfa-basligi";
 import {
   Table,
   TableBody,
@@ -50,13 +51,12 @@ export default async function DenetimKayitlariPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Denetim Kayıtları</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Kim, ne zaman, hangi veriye eriştiğinin veya değiştirdiğinin dökümü (KVKK uyumluluğu
-          için tutulur). Son 300 kayıt gösteriliyor.
-        </p>
-      </div>
+      <SayfaBasligi
+        icon={ShieldCheck}
+        renk="mor"
+        baslik="Denetim Kayıtları"
+        aciklama="Kim, ne zaman, hangi veriye eriştiğinin veya değiştirdiğinin dökümü (KVKK uyumluluğu için tutulur). Son 300 kayıt gösteriliyor."
+      />
 
       {kayitlar.length === 0 ? (
         <EmptyState

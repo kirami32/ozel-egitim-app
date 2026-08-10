@@ -1,6 +1,8 @@
 import { TrendingUp, Tags, History, CalendarCheck } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { KisiAvatari } from "@/components/kisi-avatari";
+import { AvatarYukleyici } from "@/components/avatar-yukleyici";
+import { ogrenciAvatariKaydet } from "@/lib/actions/ogrenci-avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/empty-state";
 import { VerimlilikTrendChart } from "@/components/verimlilik-trend-chart";
@@ -33,10 +35,14 @@ interface DevamKaydi {
 }
 
 interface OgrenciProfilGorunumuProps {
+  ogrenciId: string;
   adSoyad: string;
   sinifAdi: string | null;
   veliAdi?: string | null;
   taniKategorisi: string | null;
+  avatarSurum?: Date | null;
+  /** Personel için true; veli fotoğrafı yalnızca görüntüler. */
+  avatarDuzenlenebilir?: boolean;
   sessionLogs: DersKaydi[];
   attendanceRecords?: DevamKaydi[];
   ustBaslikSagi?: React.ReactNode;
@@ -44,10 +50,13 @@ interface OgrenciProfilGorunumuProps {
 }
 
 export function OgrenciProfilGorunumu({
+  ogrenciId,
   adSoyad,
   sinifAdi,
   veliAdi,
   taniKategorisi,
+  avatarSurum = null,
+  avatarDuzenlenebilir = false,
   sessionLogs,
   attendanceRecords = [],
   ustBaslikSagi,
@@ -98,25 +107,45 @@ export function OgrenciProfilGorunumu({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-4">
-          <Avatar className="h-14 w-14">
-            <AvatarFallback className="bg-primary/12 text-primary text-lg font-semibold">
-              {adSoyad.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">{adSoyad}</h1>
-            <p className="text-sm text-muted-foreground">
-              {sinifAdi ?? "Sınıf atanmadı"}
-              {veliAdi && ` · Veli: ${veliAdi}`}
-            </p>
+      <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-r from-[oklch(0.62_0.115_195)]/12 via-card to-card p-5 shadow-sm sm:p-6">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-16 -right-10 h-40 w-40 rounded-full bg-[oklch(0.62_0.115_195)]/20 blur-3xl"
+        />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <KisiAvatari
+              tur="ogrenci"
+              id={ogrenciId}
+              adSoyad={adSoyad}
+              avatarSurum={avatarSurum}
+              className="size-14 text-lg shadow-sm"
+            />
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight">{adSoyad}</h1>
+              <p className="text-sm text-muted-foreground">
+                {sinifAdi ?? "Sınıf atanmadı"}
+                {veliAdi && ` · Veli: ${veliAdi}`}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {taniKategorisi && <Badge variant="secondary">{taniKategorisi}</Badge>}
+            {ustBaslikSagi}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {taniKategorisi && <Badge variant="secondary">{taniKategorisi}</Badge>}
-          {ustBaslikSagi}
-        </div>
+
+        {avatarDuzenlenebilir && (
+          <div className="relative mt-5 border-t border-border/60 pt-5">
+            <AvatarYukleyici
+              tur="ogrenci"
+              id={ogrenciId}
+              adSoyad={adSoyad}
+              avatarSurum={avatarSurum}
+              kaydet={ogrenciAvatariKaydet.bind(null, ogrenciId)}
+            />
+          </div>
+        )}
       </div>
 
       <Card className="border-border/60">
