@@ -46,6 +46,14 @@ enum BasariSeviyesi {
   YAPAMADI
 }
 
+enum BildirimTuru {
+  VELI_NOTU
+  HEDEF_OLUSTURULDU
+  HEDEF_TAMAMLANDI
+  OGRENCI_ATANDI
+  GUVENLIK_UYARISI
+}
+
 model Institution {
   id        String   @id @default(cuid())
   ad        String
@@ -96,6 +104,10 @@ model User {
   ilerlemeKayitlari   HedefIlerleme[] @relation("IlerlemeEkleyen")
   veliNotlariYazilan  ParentNote[]    @relation("VeliNotuYazari")
 
+  bildirimler        Notification[]
+  programYuklenenler ScheduleSlot[]  @relation("ScheduleSlotOgretmen")
+  belgelerYuklenen   StudentDocument[] @relation("BelgeYukleyen")
+
   @@index([institutionId])
   @@map("users")
 }
@@ -143,6 +155,8 @@ model Student {
   attendanceRecords Attendance[]
   hedefler Hedef[]
   veliNotlari ParentNote[]
+  programSlotlari ScheduleSlot[]
+  belgeler StudentDocument[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -238,6 +252,67 @@ model ParentNote {
   @@index([studentId])
   @@index([createdAt])
   @@map("parent_notes")
+}
+
+// Uygulama ici bildirim - zil menusunde gosterilir
+model Notification {
+  id      String       @id @default(cuid())
+  tur     BildirimTuru
+  baslik  String
+  mesaj   String
+  link    String? // tiklaninca gidilecek yol, ornek: "/veli/ogrenci/xyz"
+  okunduMu Boolean     @default(false)
+
+  aliciId String
+  alici   User   @relation(fields: [aliciId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([aliciId, okunduMu])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// Haftalik tekrar eden ders programi sablonu (belirli bir tarih degil, haftanin gunu)
+model ScheduleSlot {
+  id String @id @default(cuid())
+  // 1=Pazartesi ... 5=Cuma
+  gun Int
+  baslangicSaati String // "09:00" bicimi, siralama/karsilastirma icin string yeterli
+  bitisSaati     String
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  teacherId String
+  teacher   User   @relation("ScheduleSlotOgretmen", fields: [teacherId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([teacherId, gun])
+  @@index([studentId])
+  @@map("schedule_slots")
+}
+
+// Ogrenciye ait belge (resmi BEP formu, doktor raporu, degerlendirme evraki vb.)
+model StudentDocument {
+  id        String @id @default(cuid())
+  dosyaAdi  String
+  mimeTuru  String
+  boyutBayt Int
+  veri      String // data URL olarak saklanir (avatar ile ayni desen)
+  aciklama  String?
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  yukleyenId String
+  yukleyen   User   @relation("BelgeYukleyen", fields: [yukleyenId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([studentId])
+  @@map("student_documents")
 }
 
 model BehaviorTag {

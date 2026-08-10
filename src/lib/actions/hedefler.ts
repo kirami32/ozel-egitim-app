@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { oturumGerekli } from "@/lib/rbac";
 import { denetimKaydiOlustur } from "@/lib/audit";
+import { bildirimOlustur } from "@/lib/bildirim";
 import { ogrenciYonetilebilirMi } from "@/lib/ogrenci-erisim";
 
 const ROL_YOLLARI = ["/admin", "/mudur", "/ogretmen", "/veli"];
@@ -53,6 +54,7 @@ export async function hedefOlustur(ogrenciId: string, formData: FormData) {
       hedefTarihi: veri.hedefTarihi ? new Date(veri.hedefTarihi) : null,
       olusturanId: kullanici.id,
     },
+    include: { student: { select: { adSoyad: true, veliId: true } } },
   });
 
   await denetimKaydiOlustur({
@@ -62,6 +64,16 @@ export async function hedefOlustur(ogrenciId: string, formData: FormData) {
     hedefId: hedef.id,
     detay: { studentId: ogrenciId, baslik: veri.baslik },
   });
+
+  if (hedef.student.veliId) {
+    await bildirimOlustur({
+      aliciId: hedef.student.veliId,
+      tur: "HEDEF_OLUSTURULDU",
+      baslik: `${hedef.student.adSoyad} için yeni bir hedef eklendi`,
+      mesaj: veri.baslik,
+      link: `/veli/ogrenci/${ogrenciId}`,
+    });
+  }
 
   ogrenciYollariniTazele(ogrenciId);
   return { basarili: true };
@@ -81,12 +93,13 @@ export async function hedefDurumGuncelle(
 
   const durum = durumSemasi.parse(yeniDurum);
 
-  await prisma.hedef.update({
+  const guncellenenHedef = await prisma.hedef.update({
     where: { id: hedefId, studentId: ogrenciId },
     data: {
       durum,
       tamamlanmaTarihi: durum === "TAMAMLANDI" ? new Date() : null,
     },
+    include: { student: { select: { adSoyad: true, veliId: true } } },
   });
 
   await denetimKaydiOlustur({
@@ -96,6 +109,16 @@ export async function hedefDurumGuncelle(
     hedefId,
     detay: { studentId: ogrenciId, yeniDurum: durum },
   });
+
+  if (durum === "TAMAMLANDI" && guncellenenHedef.student.veliId) {
+    await bildirimOlustur({
+      aliciId: guncellenenHedef.student.veliId,
+      tur: "HEDEF_TAMAMLANDI",
+      baslik: `${guncellenenHedef.student.adSoyad} bir hedefi tamamladı`,
+      mesaj: guncellenenHedef.baslik,
+      link: `/veli/ogrenci/${ogrenciId}`,
+    });
+  }
 
   ogrenciYollariniTazele(ogrenciId);
   return { basarili: true };

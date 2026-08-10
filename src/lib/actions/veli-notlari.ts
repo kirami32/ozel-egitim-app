@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { oturumGerekli } from "@/lib/rbac";
 import { denetimKaydiOlustur } from "@/lib/audit";
+import { bildirimOlustur } from "@/lib/bildirim";
 import { ogrenciYonetilebilirMi } from "@/lib/ogrenci-erisim";
 
 const ROL_YOLLARI = ["/admin", "/mudur", "/ogretmen", "/veli"];
@@ -43,6 +44,7 @@ export async function veliNotuEkle(ogrenciId: string, formData: FormData) {
       onemli: veri.onemli,
       yazarId: kullanici.id,
     },
+    include: { student: { select: { adSoyad: true, veliId: true } } },
   });
 
   await denetimKaydiOlustur({
@@ -52,6 +54,16 @@ export async function veliNotuEkle(ogrenciId: string, formData: FormData) {
     hedefId: not.id,
     detay: { studentId: ogrenciId },
   });
+
+  if (not.student.veliId) {
+    await bildirimOlustur({
+      aliciId: not.student.veliId,
+      tur: "VELI_NOTU",
+      baslik: `${not.student.adSoyad} için yeni bir not var`,
+      mesaj: veri.icerik.slice(0, 140),
+      link: `/veli/ogrenci/${ogrenciId}`,
+    });
+  }
 
   ogrenciYollariniTazele(ogrenciId);
   return { basarili: true };

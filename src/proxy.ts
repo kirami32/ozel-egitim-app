@@ -17,7 +17,7 @@ const ROL_ON_EK: Record<string, Role> = {
 };
 
 /** Rolden bağımsız, sadece oturum isteyen sayfalar. */
-const HESAP_ON_EKLERI = ["/profil", "/ayarlar"];
+const HESAP_ON_EKLERI = ["/profil", "/ayarlar", "/bildirimler"];
 
 export default auth((req) => {
   const { nextUrl } = req;
@@ -62,5 +62,6 @@ export const config = {
     "/veli/:path*",
     "/profil/:path*",
     "/ayarlar/:path*",
+    "/bildirimler/:path*",
   ],
 };

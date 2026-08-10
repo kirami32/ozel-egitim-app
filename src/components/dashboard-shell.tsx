@@ -2,17 +2,29 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GraduationCap, Settings, UserRound } from "lucide-react";
+import { Bell, GraduationCap, Settings, UserRound } from "lucide-react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { SignOutButton } from "@/components/sign-out-button";
 import { KisiAvatari } from "@/components/kisi-avatari";
 import { TemaDegistirici } from "@/components/tema-degistirici";
+import { BildirimZili } from "@/components/bildirim-zili";
 import { cn } from "@/lib/utils";
 import { IKON_HARITASI } from "@/lib/icons";
 import type { NavOgesi } from "@/lib/navigasyon";
+import type { BildirimTuru } from "@/generated/prisma/enums";
 
 export type { NavOgesi };
+
+interface Bildirim {
+  id: string;
+  tur: BildirimTuru;
+  baslik: string;
+  mesaj: string;
+  link: string | null;
+  okunduMu: boolean;
+  createdAt: Date;
+}
 
 interface DashboardShellProps {
   navOgeleri: NavOgesi[];
@@ -20,11 +32,14 @@ interface DashboardShellProps {
   kullaniciAdi: string;
   kullaniciId: string;
   avatarSurum?: Date | string | null;
+  ilkBildirimler: Bildirim[];
+  ilkOkunmamisSayac: number;
   children: React.ReactNode;
 }
 
 const HESAP_OGELERI = [
   { href: "/profil", label: "Profilim", Icon: UserRound },
+  { href: "/bildirimler", label: "Bildirimler", Icon: Bell },
   { href: "/ayarlar", label: "Ayarlar", Icon: Settings },
 ];
 
@@ -34,6 +49,8 @@ export function DashboardShell({
   kullaniciAdi,
   kullaniciId,
   avatarSurum,
+  ilkBildirimler,
+  ilkOkunmamisSayac,
   children,
 }: DashboardShellProps) {
   const pathname = usePathname();
@@ -49,10 +66,11 @@ export function DashboardShell({
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-[oklch(0.7_0.13_55)] text-primary-foreground shadow-sm shadow-primary/25">
             <GraduationCap className="h-5 w-5" />
           </div>
-          <div className="leading-tight">
-            <p className="text-sm font-semibold">Özel Eğitim</p>
-            <p className="text-xs text-muted-foreground">Takip Sistemi</p>
+          <div className="min-w-0 flex-1 leading-tight">
+            <p className="truncate text-sm font-semibold">Özel Eğitim</p>
+            <p className="truncate text-xs text-muted-foreground">Takip Sistemi</p>
           </div>
+          <BildirimZili ilkBildirimler={ilkBildirimler} ilkSayac={ilkOkunmamisSayac} />
         </div>
 
         <nav className="flex flex-1 flex-col gap-1">
@@ -144,6 +162,7 @@ export function DashboardShell({
             <span className="truncate text-sm font-medium">{kullaniciAdi}</span>
           </Link>
           <div className="flex items-center gap-1">
+            <BildirimZili ilkBildirimler={ilkBildirimler} ilkSayac={ilkOkunmamisSayac} />
             <TemaDegistirici />
             <Link
               href="/ayarlar"

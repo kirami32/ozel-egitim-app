@@ -10,6 +10,7 @@ import { DavranisDagilimChart } from "@/components/davranis-dagilim-chart";
 import { DevamDurumuChart } from "@/components/devam-durumu-chart";
 import { HedeflerBolumu } from "@/components/hedefler-bolumu";
 import { VeliNotlariBolumu } from "@/components/veli-notlari-bolumu";
+import { BelgelerBolumu } from "@/components/belgeler-bolumu";
 import { DEVAM_DURUM_META, devamOraniHesapla } from "@/lib/devam";
 import { cn } from "@/lib/utils";
 import type {
@@ -68,6 +69,16 @@ interface VeliNotuVerisi {
   yazar: { id: string; adSoyad: string; avatarSurum: Date | null };
 }
 
+interface BelgeVerisi {
+  id: string;
+  dosyaAdi: string;
+  mimeTuru: string;
+  boyutBayt: number;
+  aciklama: string | null;
+  createdAt: Date;
+  yukleyen: { id: string; adSoyad: string; avatarSurum: Date | null };
+}
+
 interface OgrenciProfilGorunumuProps {
   ogrenciId: string;
   adSoyad: string;
@@ -86,6 +97,7 @@ interface OgrenciProfilGorunumuProps {
   attendanceRecords?: DevamKaydi[];
   hedefler?: HedefVerisi[];
   veliNotlari?: VeliNotuVerisi[];
+  belgeler?: BelgeVerisi[];
   mevcutKullaniciId: string;
   mevcutKullaniciRolu: Role;
   ustBaslikSagi?: React.ReactNode;
@@ -105,6 +117,7 @@ export function OgrenciProfilGorunumu({
   attendanceRecords = [],
   hedefler = [],
   veliNotlari = [],
+  belgeler = [],
   mevcutKullaniciId,
   mevcutKullaniciRolu,
   ustBaslikSagi,
@@ -208,6 +221,12 @@ export function OgrenciProfilGorunumu({
         yazilabilir={notVeHedefDuzenlenebilir}
         mevcutKullaniciId={mevcutKullaniciId}
         mevcutKullaniciRolu={mevcutKullaniciRolu}
+      />
+
+      <BelgelerBolumu
+        ogrenciId={ogrenciId}
+        belgeler={belgeler}
+        yonetilebilir={avatarDuzenlenebilir}
       />
 
       <Card className="border-border/60">

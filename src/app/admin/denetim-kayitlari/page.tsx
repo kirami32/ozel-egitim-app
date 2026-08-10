@@ -1,8 +1,7 @@
-import { AlertTriangle, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Download, ShieldCheck } from "lucide-react";
 import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@/generated/prisma/client";
-import type { Role } from "@/generated/prisma/enums";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
@@ -20,51 +19,19 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { eylemEtiketi, eylemRengi, GUVENLIK_EYLEMLERI } from "@/lib/denetim";
+import { denetimWhereUret, type DenetimFiltreParametreleri } from "@/lib/denetim-sorgu";
 import { DenetimFiltreleri } from "./denetim-filtreleri";
 
 const AZAMI_KAYIT = 300;
 
-function gunBasi(tarihStr: string): Date {
-  return new Date(`${tarihStr}T00:00:00.000Z`);
-}
-
-function gunSonrasi(tarihStr: string): Date {
-  const t = gunBasi(tarihStr);
-  t.setUTCDate(t.getUTCDate() + 1);
-  return t;
-}
-
 export default async function DenetimKayitlariPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    q?: string;
-    eylem?: string;
-    rol?: string;
-    baslangic?: string;
-    bitis?: string;
-  }>;
+  searchParams: Promise<DenetimFiltreParametreleri>;
 }) {
   await oturumGerekli(["SUPER_ADMIN"]);
-  const { q, eylem, rol, baslangic, bitis } = await searchParams;
-
-  const where: Prisma.AuditLogWhereInput = {
-    eylem: eylem || undefined,
-    user: rol ? { rol: rol as Role } : undefined,
-    createdAt: {
-      gte: baslangic ? gunBasi(baslangic) : undefined,
-      lt: bitis ? gunSonrasi(bitis) : undefined,
-    },
-    ...(q?.trim()
-      ? {
-          OR: [
-            { user: { adSoyad: { contains: q.trim(), mode: "insensitive" } } },
-            { user: { email: { contains: q.trim(), mode: "insensitive" } } },
-            { ipAdresi: { contains: q.trim() } },
-          ],
-        }
-      : {}),
-  };
+  const filtreler = await searchParams;
+  const where = denetimWhereUret(filtreler);
 
   const bugunBaslangic = new Date();
   bugunBaslangic.setUTCHours(0, 0, 0, 0);
@@ -100,6 +67,18 @@ export default async function DenetimKayitlariPage({
         renk="mor"
         baslik="Denetim Kayıtları"
         aciklama="Kim, ne zaman, hangi veriye eriştiğinin veya değiştirdiğinin dökümü (KVKK uyumluluğu için tutulur)."
+        aksiyon={
+          <Button asChild variant="outline">
+            <a
+              href={`/api/export/denetim-kayitlari?${new URLSearchParams(
+                Object.entries(filtreler).filter(([, v]) => v) as [string, string][]
+              ).toString()}`}
+            >
+              <Download className="h-4 w-4" />
+              CSV İndir
+            </a>
+          </Button>
+        }
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

@@ -34,6 +34,7 @@ export const ROL_NAV: Record<Role, NavOgesi[]> = {
       label: "Devam / Devamsızlık",
       icon: "CalendarCheck",
     },
+    { href: "/mudur/program", label: "Ders Programı", icon: "CalendarDays" },
   ],
   OGRETMEN: [
     { href: "/ogretmen", label: "Öğrencilerim", icon: "Users" },
@@ -43,6 +44,7 @@ export const ROL_NAV: Record<Role, NavOgesi[]> = {
       label: "Devam / Devamsızlık",
       icon: "CalendarCheck",
     },
+    { href: "/ogretmen/program", label: "Ders Programı", icon: "CalendarDays" },
     { href: "/ogretmen/gecmis", label: "Geçmiş Derslerim", icon: "History" },
   ],
   VELI: [

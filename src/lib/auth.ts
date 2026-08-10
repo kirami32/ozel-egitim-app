@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { hizSinirinaTakildiMi } from "@/lib/rate-limit";
 import { denetimKaydiOlustur, istekIpAdresi } from "@/lib/audit";
+import { bildirimOlusturTopluca } from "@/lib/bildirim";
 import type { Role } from "@/generated/prisma/enums";
 
 declare module "next-auth" {
@@ -58,6 +59,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             detay: { email: normalEmail },
             ipAdresi: ip,
           });
+
+          const adminler = await prisma.user.findMany({
+            where: { rol: "SUPER_ADMIN" },
+            select: { id: true },
+          });
+          await bildirimOlusturTopluca(
+            adminler.map((a) => a.id),
+            {
+              tur: "GUVENLIK_UYARISI",
+              baslik: "Çok fazla başarısız giriş denemesi",
+              mesaj: `${normalEmail} için art arda başarısız giriş denemeleri sonrası geçici engel uygulandı.`,
+              link: "/admin/denetim-kayitlari",
+            }
+          );
+
           throw new Error("Çok fazla başarısız deneme. Lütfen daha sonra tekrar deneyin.");
         }
 

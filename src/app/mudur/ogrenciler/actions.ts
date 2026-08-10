@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { oturumGerekli } from "@/lib/rbac";
 import { denetimKaydiOlustur } from "@/lib/audit";
+import { bildirimOlustur } from "@/lib/bildirim";
 
 const ogrenciSemasi = z.object({
   adSoyad: z.string().trim().min(2, "Ad soyad en az 2 karakter olmalı"),
@@ -26,11 +27,13 @@ export async function ogrenciOlustur(formData: FormData) {
     veliId: formData.get("veliId") || undefined,
   });
 
+  let atananOgretmenId: string | null = null;
   if (veri.classroomId) {
     const sinif = await prisma.classroom.findFirst({
       where: { id: veri.classroomId, institutionId },
     });
     if (!sinif) throw new Error("Geçersiz sınıf seçimi.");
+    atananOgretmenId = sinif.teacherId;
   }
 
   if (veri.veliId) {
@@ -57,6 +60,16 @@ export async function ogrenciOlustur(formData: FormData) {
     hedefTur: "Student",
     hedefId: ogrenci.id,
   });
+
+  if (atananOgretmenId) {
+    await bildirimOlustur({
+      aliciId: atananOgretmenId,
+      tur: "OGRENCI_ATANDI",
+      baslik: "Sınıfınıza yeni bir öğrenci eklendi",
+      mesaj: ogrenci.adSoyad,
+      link: `/ogretmen/ogrenci/${ogrenci.id}`,
+    });
+  }
 
   revalidatePath("/mudur/ogrenciler");
   revalidatePath("/mudur");

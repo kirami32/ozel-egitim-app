@@ -40,6 +40,10 @@ export default async function MudurOgrenciDetayPage({
         orderBy: { createdAt: "desc" },
         include: { yazar: { select: { id: true, adSoyad: true, avatarSurum: true } } },
       },
+      belgeler: {
+        orderBy: { createdAt: "desc" },
+        include: { yukleyen: { select: { id: true, adSoyad: true, avatarSurum: true } } },
+      },
     },
   });
 
@@ -74,6 +78,7 @@ export default async function MudurOgrenciDetayPage({
         attendanceRecords={ogrenci.attendanceRecords}
         hedefler={ogrenci.hedefler}
         veliNotlari={ogrenci.veliNotlari}
+        belgeler={ogrenci.belgeler}
         notVeHedefDuzenlenebilir
         mevcutKullaniciId={kullanici.id}
         mevcutKullaniciRolu={kullanici.rol}

@@ -28,10 +28,20 @@ export async function RolKabugu({
 
   // Sadece avatarın sürümünü çekiyoruz; base64 gövdesi /api/avatar üzerinden
   // ayrıca ve önbelleklenebilir şekilde servis ediliyor.
-  const profil = await prisma.user.findUnique({
-    where: { id: kullanici.id },
-    select: { avatarSurum: true, adSoyad: true },
-  });
+  const [profil, bildirimler, okunmamisSayac] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: kullanici.id },
+      select: { avatarSurum: true, adSoyad: true },
+    }),
+    prisma.notification.findMany({
+      where: { aliciId: kullanici.id },
+      orderBy: { createdAt: "desc" },
+      take: 15,
+    }),
+    prisma.notification.count({
+      where: { aliciId: kullanici.id, okunduMu: false },
+    }),
+  ]);
 
   return (
     <DashboardShell
@@ -40,6 +50,8 @@ export async function RolKabugu({
       kullaniciAdi={profil?.adSoyad ?? kullanici.adSoyad}
       kullaniciId={kullanici.id}
       avatarSurum={profil?.avatarSurum ?? null}
+      ilkBildirimler={bildirimler}
+      ilkOkunmamisSayac={okunmamisSayac}
     >
       {children}
     </DashboardShell>

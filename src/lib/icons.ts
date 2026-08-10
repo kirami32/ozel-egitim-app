@@ -16,6 +16,15 @@ import {
   CalendarX2,
   Target,
   MessageCircleHeart,
+  PartyPopper,
+  ShieldAlert,
+  CalendarDays,
+  FileText,
+  Paperclip,
+  BarChart3,
+  Bell,
+  Download,
+  Upload,
   type LucideIcon,
 } from "lucide-react";
 
@@ -37,6 +46,15 @@ export const IKON_HARITASI = {
   CalendarX2,
   Target,
   MessageCircleHeart,
+  PartyPopper,
+  ShieldAlert,
+  CalendarDays,
+  FileText,
+  Paperclip,
+  BarChart3,
+  Bell,
+  Download,
+  Upload,
 } satisfies Record<string, LucideIcon>;
 
 export type IkonAdi = keyof typeof IKON_HARITASI;

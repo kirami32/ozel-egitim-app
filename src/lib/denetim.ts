@@ -49,6 +49,12 @@ export const EYLEM_META: Record<string, EylemMeta> = {
 
   VELI_NOTU_CREATE: { etiket: "Veliye Not Paylaşıldı", renk: "default", kategori: "Veli Notu" },
   VELI_NOTU_DELETE: { etiket: "Veli Notu Silindi", renk: "destructive", kategori: "Veli Notu" },
+
+  PROGRAM_SLOT_CREATE: { etiket: "Ders Programına Eklendi", renk: "default", kategori: "Ders Programı" },
+  PROGRAM_SLOT_DELETE: { etiket: "Ders Programından Kaldırıldı", renk: "secondary", kategori: "Ders Programı" },
+
+  STUDENT_DOCUMENT_UPLOAD: { etiket: "Belge Yüklendi", renk: "default", kategori: "Belge" },
+  STUDENT_DOCUMENT_DELETE: { etiket: "Belge Silindi", renk: "destructive", kategori: "Belge" },
 };
 
 export function eylemEtiketi(eylem: string): string {
