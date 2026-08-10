@@ -93,47 +93,6 @@ export function OgrenciProfilGorunumu({
       </div>
 
       <Card className="border-border/60">
-        <CardHeader className="flex-row items-center justify-between space-y-0">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <TrendingUp className="h-4 w-4 text-primary" />
-            Verimlilik Trendi
-          </CardTitle>
-          <Badge variant="outline">Ortalama: {ortalamaVerimlilik}/10</Badge>
-        </CardHeader>
-        <CardContent>
-          {trendVerisi.length === 0 ? (
-            <EmptyState
-              icon={TrendingUp}
-              baslik="Henüz veri yok"
-              aciklama="İlk ders kaydı eklendiğinde trend grafiği burada oluşacak."
-            />
-          ) : (
-            <VerimlilikTrendChart veri={trendVerisi} />
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="border-border/60">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Tags className="h-4 w-4 text-primary" />
-            Davranış Etiketi Dağılımı
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {dagilimVerisi.length === 0 ? (
-            <EmptyState
-              icon={Tags}
-              baslik="Henüz davranış etiketi kaydı yok"
-              aciklama="Ders kayıtlarına etiket eklendikçe dağılım burada görünecek."
-            />
-          ) : (
-            <DavranisDagilimChart veri={dagilimVerisi} />
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="border-border/60">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <History className="h-4 w-4 text-primary" />
@@ -182,6 +141,47 @@ export function OgrenciProfilGorunumu({
                 </div>
               ))}
             </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-border/60">
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <TrendingUp className="h-4 w-4 text-primary" />
+            Verimlilik Trendi
+          </CardTitle>
+          <Badge variant="outline">Ortalama: {ortalamaVerimlilik}/10</Badge>
+        </CardHeader>
+        <CardContent>
+          {trendVerisi.length === 0 ? (
+            <EmptyState
+              icon={TrendingUp}
+              baslik="Henüz veri yok"
+              aciklama="İlk ders kaydı eklendiğinde trend grafiği burada oluşacak."
+            />
+          ) : (
+            <VerimlilikTrendChart veri={trendVerisi} />
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-border/60">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Tags className="h-4 w-4 text-primary" />
+            Davranış Etiketi Dağılımı
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {dagilimVerisi.length === 0 ? (
+            <EmptyState
+              icon={Tags}
+              baslik="Henüz davranış etiketi kaydı yok"
+              aciklama="Ders kayıtlarına etiket eklendikçe dağılım burada görünecek."
+            />
+          ) : (
+            <DavranisDagilimChart veri={dagilimVerisi} />
           )}
         </CardContent>
       </Card>
