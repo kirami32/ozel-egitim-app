@@ -1,0 +1,171 @@
+// Ozel Egitim Kurumu Takip ve Raporlama Sistemi - Prisma semasi
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  SUPER_ADMIN
+  MUDUR
+  OGRETMEN
+  VELI
+}
+
+model Institution {
+  id        String   @id @default(cuid())
+  ad        String
+  adres     String?
+  telefon   String?
+  email     String?
+  aktifMi   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users      User[]
+  classrooms Classroom[]
+  students   Student[]
+
+  @@map("institutions")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  adSoyad      String
+  email        String   @unique
+  sifreHash    String
+  rol          Role
+  aktifMi      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  institutionId String?
+  institution   Institution? @relation(fields: [institutionId], references: [id], onDelete: SetNull)
+
+  // ogretmen ise verdigi siniflar
+  classroomsTaught Classroom[]  @relation("ClassroomTeacher")
+  sessionLogs      SessionLog[] @relation("TeacherSessionLogs")
+
+  // veli ise cocuklari
+  children Student[] @relation("StudentParent")
+
+  auditLogs AuditLog[]
+
+  @@index([institutionId])
+  @@map("users")
+}
+
+model Classroom {
+  id   String @id @default(cuid())
+  ad   String
+
+  institutionId String
+  institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  teacherId String?
+  teacher   User?   @relation("ClassroomTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
+
+  students Student[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([institutionId])
+  @@map("classrooms")
+}
+
+model Student {
+  id             String    @id @default(cuid())
+  adSoyad        String
+  dogumTarihi    DateTime?
+  taniKategorisi String?
+  kayitTarihi    DateTime  @default(now())
+  aktifMi        Boolean   @default(true)
+
+  institutionId String
+  institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  classroomId String?
+  classroom   Classroom? @relation(fields: [classroomId], references: [id], onDelete: SetNull)
+
+  veliId String?
+  veli   User?   @relation("StudentParent", fields: [veliId], references: [id], onDelete: SetNull)
+
+  sessionLogs SessionLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([institutionId])
+  @@index([classroomId])
+  @@index([veliId])
+  @@map("students")
+}
+
+model BehaviorTag {
+  id       String  @id @default(cuid())
+  ad       String  @unique
+  kategori String?
+  renkKodu String  @default("#94A3B8")
+
+  sessionLogs SessionLogBehaviorTag[]
+
+  @@map("behavior_tags")
+}
+
+model SessionLog {
+  id             String   @id @default(cuid())
+  tarih          DateTime @default(now())
+  islenenKonu    String?
+  verimlilikPuani Int     // 1-10
+  serbestNot     String?
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  teacherId String
+  teacher   User    @relation("TeacherSessionLogs", fields: [teacherId], references: [id], onDelete: Cascade)
+
+  behaviorTags SessionLogBehaviorTag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentId])
+  @@index([teacherId])
+  @@index([tarih])
+  @@map("session_logs")
+}
+
+// SessionLog <-> BehaviorTag cok-cok iliski tablosu
+model SessionLogBehaviorTag {
+  sessionLogId  String
+  sessionLog    SessionLog  @relation(fields: [sessionLogId], references: [id], onDelete: Cascade)
+  behaviorTagId String
+  behaviorTag   BehaviorTag @relation(fields: [behaviorTagId], references: [id], onDelete: Cascade)
+
+  @@id([sessionLogId, behaviorTagId])
+  @@map("session_log_behavior_tags")
+}
+
+// KVKK: hassas veriye kim ne zaman eristi - denetim kaydi
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eylem      String   // ornek: "STUDENT_VIEW", "SESSION_LOG_CREATE"
+  hedefTur   String   // ornek: "Student", "SessionLog"
+  hedefId    String?
+  detay      Json?
+  ipAdresi   String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([hedefTur, hedefId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
