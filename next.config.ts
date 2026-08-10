@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // PDF raporu Türkçe karakterler için gömülü Roboto fontunu diskten okur;
+  // bu dosyaların sunucu paketine (serverless trace) dâhil edilmesi şart.
+  outputFileTracingIncludes: {
+    "/api/rapor/[studentId]": ["src/assets/fonts/**/*"],
+  },
+
   async headers() {
     return [
       {

@@ -1,9 +1,33 @@
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import path from "node:path";
+import { Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer";
+
+/**
+ * Türkçe karakterler (ş, ğ, ı, İ) standart PDF fontlarının (Helvetica) karakter
+ * setinde yoktur — bu fontla "Gelişim" kelimesi "Geli_im" olarak çıkar.
+ * Bu yüzden Türkçe destekli Roboto'yu projeye gömüp kaydediyoruz.
+ */
+const FONT_AILESI = "Roboto";
+let fontlarKayitli = false;
+
+function fontlariKaydet() {
+  if (fontlarKayitli) return;
+  const dizin = path.join(process.cwd(), "src", "assets", "fonts");
+  Font.register({
+    family: FONT_AILESI,
+    fonts: [
+      { src: path.join(dizin, "Roboto-Regular.ttf") },
+      { src: path.join(dizin, "Roboto-Bold.ttf"), fontWeight: 700 },
+    ],
+  });
+  // Türkçe kelimeler satır sonunda yanlış bölünmesin
+  Font.registerHyphenationCallback((kelime) => [kelime]);
+  fontlarKayitli = true;
+}
 
 const styles = StyleSheet.create({
-  page: { padding: 40, fontSize: 11, fontFamily: "Helvetica", color: "#28324A" },
+  page: { padding: 40, fontSize: 11, fontFamily: FONT_AILESI, color: "#28324A" },
   baslikSatiri: { marginBottom: 20, borderBottom: "2 solid #4E9C88", paddingBottom: 12 },
-  baslik: { fontSize: 18, fontWeight: 700, marginBottom: 2 },
+  baslik: { fontSize: 18, fontFamily: FONT_AILESI, fontWeight: 700, marginBottom: 2 },
   altBaslik: { fontSize: 10, color: "#6B7280" },
   ozetSatiri: { flexDirection: "row", justifyContent: "space-between", marginBottom: 20 },
   ozetKutu: {
@@ -12,16 +36,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0F7F5",
     borderRadius: 8,
   },
-  ozetDeger: { fontSize: 16, fontWeight: 700, color: "#4E9C88" },
+  ozetDeger: { fontSize: 16, fontFamily: FONT_AILESI, fontWeight: 700, color: "#4E9C88" },
   ozetEtiket: { fontSize: 9, color: "#6B7280", marginTop: 2 },
-  bolumBaslik: { fontSize: 12, fontWeight: 700, marginTop: 16, marginBottom: 8 },
+  bolumBaslik: {
+    fontSize: 12,
+    fontFamily: FONT_AILESI,
+    fontWeight: 700,
+    marginTop: 16,
+    marginBottom: 8,
+  },
   kayit: {
     borderBottom: "1 solid #E5E7EB",
     paddingVertical: 8,
   },
   kayitUst: { flexDirection: "row", justifyContent: "space-between" },
-  kayitTarih: { fontSize: 10, fontWeight: 700 },
-  kayitPuan: { fontSize: 10, fontWeight: 700, color: "#4E9C88" },
+  kayitTarih: { fontSize: 10, fontFamily: FONT_AILESI, fontWeight: 700 },
+  kayitPuan: { fontSize: 10, fontFamily: FONT_AILESI, fontWeight: 700, color: "#4E9C88" },
   kayitKonu: { fontSize: 9, color: "#6B7280", marginTop: 2 },
   kayitNot: { fontSize: 9, color: "#374151", marginTop: 3 },
   etiketSatiri: { flexDirection: "row", flexWrap: "wrap", marginTop: 4, gap: 4 },
@@ -53,6 +83,8 @@ interface RaporVerisi {
 }
 
 export function OgrenciRaporPdf({ veri }: { veri: RaporVerisi }) {
+  fontlariKaydet();
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
