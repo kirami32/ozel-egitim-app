@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { GraduationCap } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { GirisForm } from "@/components/giris-form";
+import { GirisHero } from "@/components/giris-hero";
+import { GirisArkaplan } from "@/components/giris-arkaplan";
 import type { Role } from "@/generated/prisma/enums";
 
 const ROL_ANA_SAYFA: Record<Role, string> = {
@@ -19,29 +21,35 @@ export default async function GirisPage() {
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center bg-gradient-to-br from-[oklch(0.94_0.03_195)] via-background to-[oklch(0.95_0.035_55)] p-6">
-      <div className="w-full max-w-md">
-        <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
-            <GraduationCap className="h-7 w-7" />
+    <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-gradient-to-br from-[oklch(0.94_0.03_195)] via-background to-[oklch(0.95_0.035_55)] p-6">
+      <GirisArkaplan />
+
+      <div className="relative z-10 grid w-full max-w-5xl items-stretch gap-8 lg:grid-cols-2">
+        <GirisHero />
+
+        <div className="flex w-full max-w-md flex-col justify-center justify-self-center">
+          <div className="mb-8 flex flex-col items-center text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+              <GraduationCap className="h-7 w-7" />
+            </div>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Özel Eğitim Takip Sistemi
+            </h1>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              Devam etmek için hesabınıza giriş yapın
+            </p>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Özel Eğitim Takip Sistemi
-          </h1>
-          <p className="mt-1.5 text-sm text-muted-foreground">
-            Devam etmek için hesabınıza giriş yapın
+
+          <div className="rounded-3xl border border-white/60 bg-card/80 p-8 shadow-xl shadow-black/5 backdrop-blur-xl dark:border-white/10 dark:bg-card/70">
+            <Suspense>
+              <GirisForm />
+            </Suspense>
+          </div>
+
+          <p className="mt-6 text-center text-xs text-muted-foreground">
+            Hesap bilgileriniz için kurumunuzla iletişime geçin.
           </p>
         </div>
-
-        <div className="rounded-3xl border border-border bg-card p-8 shadow-xl shadow-black/5">
-          <Suspense>
-            <GirisForm />
-          </Suspense>
-        </div>
-
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          Hesap bilgileriniz için kurumunuzla iletişime geçin.
-        </p>
       </div>
     </div>
   );

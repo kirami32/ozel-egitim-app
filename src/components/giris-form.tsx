@@ -74,7 +74,6 @@ export function GirisForm() {
         <Input
           id="email"
           type="email"
-          placeholder="ornek@kurum.com"
           autoComplete="email"
           {...register("email")}
         />
@@ -88,7 +87,6 @@ export function GirisForm() {
         <Input
           id="password"
           type="password"
-          placeholder="••••••••"
           autoComplete="current-password"
           {...register("password")}
         />
@@ -97,7 +95,12 @@ export function GirisForm() {
         )}
       </div>
 
-      <Button type="submit" className="w-full" size="lg" disabled={isPending}>
+      <Button
+        type="submit"
+        size="lg"
+        disabled={isPending}
+        className="btn-glow relative h-13 w-full overflow-hidden rounded-2xl text-base font-semibold"
+      >
         {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
         Giriş Yap
       </Button>

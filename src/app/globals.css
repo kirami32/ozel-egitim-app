@@ -128,3 +128,111 @@
     @apply font-sans;
   }
 }
+
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-130%) skewX(-18deg);
+  }
+  100% {
+    transform: translateX(230%) skewX(-18deg);
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 8px 24px -8px color-mix(in oklch, var(--primary), transparent 25%);
+  }
+  50% {
+    box-shadow: 0 10px 34px -6px color-mix(in oklch, var(--primary), transparent 5%);
+  }
+}
+
+.btn-glow {
+  animation: glow-pulse 2.6s ease-in-out infinite;
+}
+
+.btn-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    color-mix(in oklch, white, transparent 30%) 50%,
+    transparent 80%
+  );
+  animation: shimmer-sweep 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* --- Giriş sayfası arka plan katmanı --- */
+
+/* Çok soluk nokta deseni, kenarlara doğru radyal olarak siliniyor. */
+.arkaplan-nokta {
+  background-image: radial-gradient(
+    color-mix(in oklch, var(--foreground), transparent 88%) 1px,
+    transparent 1px
+  );
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(
+    ellipse 90% 70% at 50% 45%,
+    black 20%,
+    transparent 78%
+  );
+  mask-image: radial-gradient(
+    ellipse 90% 70% at 50% 45%,
+    black 20%,
+    transparent 78%
+  );
+}
+
+/* Büyük, bulanık renk kürelerinin yavaş sürüklenmesi. */
+@keyframes kure-suruklen {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(6%, -7%, 0) scale(1.12);
+  }
+  66% {
+    transform: translate3d(-5%, 6%, 0) scale(0.92);
+  }
+}
+
+.arkaplan-kure {
+  animation: kure-suruklen 22s ease-in-out infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arkaplan-kure,
+  .btn-glow,
+  .btn-glow::after {
+    animation: none;
+  }
+}
+
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(4deg);
+  }
+}
+
+@keyframes blob-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(3%, -4%) scale(1.08);
+  }
+  66% {
+    transform: translate(-3%, 3%) scale(0.96);
+  }
+}
