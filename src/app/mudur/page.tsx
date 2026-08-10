@@ -1,16 +1,19 @@
-import { Users, GraduationCap, School, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import { Users, GraduationCap, School, TrendingUp, Tags } from "lucide-react";
 import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { StatCard } from "@/components/stat-card";
 import { EmptyState } from "@/components/empty-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { VerimlilikTrendChart } from "@/components/verimlilik-trend-chart";
+import { DavranisDagilimChart } from "@/components/davranis-dagilim-chart";
 
 export default async function MudurGenelBakis() {
   const kullanici = await oturumGerekli(["MUDUR"]);
   const institutionId = kullanici.institutionId!;
 
-  const [ogretmenSayisi, ogrenciSayisi, sinifSayisi, verimlilikOrt, sonDersKayitlari] =
+  const [ogretmenSayisi, ogrenciSayisi, sinifSayisi, verimlilikOrt, sonDersKayitlari, tumKayitlar] =
     await Promise.all([
       prisma.user.count({ where: { institutionId, rol: "OGRETMEN" } }),
       prisma.student.count({ where: { institutionId } }),
@@ -25,9 +28,43 @@ export default async function MudurGenelBakis() {
         take: 6,
         include: { student: { select: { adSoyad: true } }, teacher: { select: { adSoyad: true } } },
       }),
+      prisma.sessionLog.findMany({
+        where: { student: { institutionId } },
+        orderBy: { tarih: "asc" },
+        include: { behaviorTags: { include: { behaviorTag: true } } },
+      }),
     ]);
 
   const ortalama = verimlilikOrt._avg.verimlilikPuani;
+
+  const gunlukMap = new Map<string, { toplam: number; sayi: number }>();
+  for (const kayit of tumKayitlar) {
+    const anahtar = new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "2-digit" }).format(
+      kayit.tarih
+    );
+    const mevcut = gunlukMap.get(anahtar);
+    gunlukMap.set(anahtar, {
+      toplam: (mevcut?.toplam ?? 0) + kayit.verimlilikPuani,
+      sayi: (mevcut?.sayi ?? 0) + 1,
+    });
+  }
+  const trendVerisi = Array.from(gunlukMap.entries())
+    .slice(-14)
+    .map(([tarih, v]) => ({ tarih, puan: Number((v.toplam / v.sayi).toFixed(1)) }));
+
+  const dagilimMap = new Map<string, { sayi: number; renk: string }>();
+  for (const kayit of tumKayitlar) {
+    for (const iliski of kayit.behaviorTags) {
+      const mevcut = dagilimMap.get(iliski.behaviorTag.ad);
+      dagilimMap.set(iliski.behaviorTag.ad, {
+        sayi: (mevcut?.sayi ?? 0) + 1,
+        renk: iliski.behaviorTag.renkKodu,
+      });
+    }
+  }
+  const dagilimVerisi = Array.from(dagilimMap.entries())
+    .map(([etiket, v]) => ({ etiket, sayi: v.sayi, renk: v.renk }))
+    .sort((a, b) => b.sayi - a.sayi);
 
   return (
     <div className="space-y-8">
@@ -49,6 +86,48 @@ export default async function MudurGenelBakis() {
           renk="chart-4"
           index={3}
         />
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              Kurum Geneli Verimlilik Trendi
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {trendVerisi.length === 0 ? (
+              <EmptyState
+                icon={TrendingUp}
+                baslik="Henüz veri yok"
+                aciklama="Öğretmenler ders kaydı ekledikçe trend burada oluşacak."
+              />
+            ) : (
+              <VerimlilikTrendChart veri={trendVerisi} />
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Tags className="h-4 w-4 text-primary" />
+              Kurum Geneli Davranış Eğilimleri
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {dagilimVerisi.length === 0 ? (
+              <EmptyState
+                icon={Tags}
+                baslik="Henüz davranış etiketi kaydı yok"
+                aciklama="Ders kayıtlarına etiket eklendikçe dağılım burada görünecek."
+              />
+            ) : (
+              <DavranisDagilimChart veri={dagilimVerisi} />
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
@@ -87,6 +166,12 @@ export default async function MudurGenelBakis() {
           )}
         </CardContent>
       </Card>
+
+      <div className="text-right">
+        <Link href="/mudur/ogrenciler" className="text-sm font-medium text-primary hover:underline">
+          Tüm öğrencileri görüntüle →
+        </Link>
+      </div>
     </div>
   );
 }

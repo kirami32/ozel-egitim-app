@@ -9,6 +9,9 @@ import {
   ClipboardList,
   TrendingUp,
   UserPlus,
+  History,
+  ShieldCheck,
+  PlusCircle,
   type LucideIcon,
 } from "lucide-react";
 
@@ -23,6 +26,9 @@ export const IKON_HARITASI = {
   ClipboardList,
   TrendingUp,
   UserPlus,
+  History,
+  ShieldCheck,
+  PlusCircle,
 } satisfies Record<string, LucideIcon>;
 
 export type IkonAdi = keyof typeof IKON_HARITASI;

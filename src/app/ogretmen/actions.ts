@@ -55,5 +55,6 @@ export async function dersKaydiOlustur(formData: FormData) {
 
   revalidatePath(`/ogretmen/ogrenci/${veri.studentId}`);
   revalidatePath("/ogretmen");
+  revalidatePath("/ogretmen/gecmis");
   return { basarili: true };
 }

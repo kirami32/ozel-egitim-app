@@ -1,35 +1,60 @@
 import Link from "next/link";
-import { Users, ChevronRight } from "lucide-react";
+import { Users, ChevronRight, PlusCircle } from "lucide-react";
 import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
+import { StatCard } from "@/components/stat-card";
 
 export default async function OgretmenAnaSayfa() {
   const kullanici = await oturumGerekli(["OGRETMEN"]);
 
-  const ogrenciler = await prisma.student.findMany({
-    where: { classroom: { teacherId: kullanici.id }, aktifMi: true },
-    orderBy: { adSoyad: "asc" },
-    include: {
-      classroom: { select: { ad: true } },
-      sessionLogs: {
-        where: { teacherId: kullanici.id },
-        orderBy: { tarih: "desc" },
-        take: 1,
+  const bugunBaslangic = new Date();
+  bugunBaslangic.setHours(0, 0, 0, 0);
+
+  const [ogrenciler, bugunkuKayitSayisi, toplamKayitSayisi] = await Promise.all([
+    prisma.student.findMany({
+      where: { classroom: { teacherId: kullanici.id }, aktifMi: true },
+      orderBy: { adSoyad: "asc" },
+      include: {
+        classroom: { select: { ad: true } },
+        sessionLogs: {
+          where: { teacherId: kullanici.id },
+          orderBy: { tarih: "desc" },
+          take: 1,
+        },
       },
-    },
-  });
+    }),
+    prisma.sessionLog.count({
+      where: { teacherId: kullanici.id, tarih: { gte: bugunBaslangic } },
+    }),
+    prisma.sessionLog.count({ where: { teacherId: kullanici.id } }),
+  ]);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Bugün Dersi Olan Öğrenciler</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Ders sonrası kayıt eklemek için bir öğrenci seçin.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Bugün Dersi Olan Öğrenciler</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Ders sonrası kayıt eklemek için bir öğrenci seçin.
+          </p>
+        </div>
+        <Button asChild>
+          <Link href="/ogretmen/yeni-kayit">
+            <PlusCircle className="h-4 w-4" />
+            Yeni Kayıt Ekle
+          </Link>
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard baslik="Öğrencilerim" deger={ogrenciler.length} icon="Users" renk="primary" index={0} />
+        <StatCard baslik="Bugün Girilen Kayıt" deger={bugunkuKayitSayisi} icon="PlusCircle" renk="accent" index={1} />
+        <StatCard baslik="Toplam Ders Kaydı" deger={toplamKayitSayisi} icon="History" renk="chart-3" index={2} />
       </div>
 
       {ogrenciler.length === 0 ? (

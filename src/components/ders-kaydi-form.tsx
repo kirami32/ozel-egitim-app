@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { dersKaydiOlustur } from "./actions";
+import { dersKaydiOlustur } from "@/app/ogretmen/actions";
 
 interface DavranisEtiketi {
   id: string;
@@ -21,9 +21,11 @@ interface DavranisEtiketi {
 export function DersKaydiForm({
   studentId,
   davranisEtiketleri,
+  onBasarili,
 }: {
   studentId: string;
   davranisEtiketleri: DavranisEtiketi[];
+  onBasarili?: () => void;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -52,6 +54,7 @@ export function DersKaydiForm({
         setVerimlilik(7);
         (document.getElementById("ders-kaydi-formu") as HTMLFormElement)?.reset();
         router.refresh();
+        onBasarili?.();
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Bir hata oluştu");
       }

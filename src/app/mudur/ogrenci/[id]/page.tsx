@@ -1,24 +1,24 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, FileDown } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { denetimKaydiOlustur } from "@/lib/audit";
-import { Button } from "@/components/ui/button";
 import { OgrenciProfilGorunumu } from "@/components/ogrenci-profil-gorunumu";
 
-export default async function VeliOgrenciDetayPage({
+export default async function MudurOgrenciDetayPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const kullanici = await oturumGerekli(["VELI"]);
+  const kullanici = await oturumGerekli(["MUDUR"]);
 
   const ogrenci = await prisma.student.findFirst({
-    where: { id, veliId: kullanici.id },
+    where: { id, institutionId: kullanici.institutionId! },
     include: {
       classroom: { select: { ad: true } },
+      veli: { select: { adSoyad: true } },
       sessionLogs: {
         orderBy: { tarih: "desc" },
         include: {
@@ -41,27 +41,20 @@ export default async function VeliOgrenciDetayPage({
   return (
     <div className="space-y-6">
       <Link
-        href="/veli"
+        href="/mudur/ogrenciler"
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
-        Çocuklarıma dön
+        Tüm öğrencilere dön
       </Link>
 
       <OgrenciProfilGorunumu
         adSoyad={ogrenci.adSoyad}
         sinifAdi={ogrenci.classroom?.ad ?? null}
+        veliAdi={ogrenci.veli?.adSoyad}
         taniKategorisi={ogrenci.taniKategorisi}
         sessionLogs={ogrenci.sessionLogs}
         ogretmenAdiGoster
-        ustBaslikSagi={
-          <Button asChild>
-            <Link href={`/veli/rapor?studentId=${ogrenci.id}`}>
-              <FileDown className="h-4 w-4" />
-              PDF Rapor İndir
-            </Link>
-          </Button>
-        }
       />
     </div>
   );

@@ -5,6 +5,8 @@ const NAV: NavOgesi[] = [
   { href: "/admin", label: "Genel Bakış", icon: "LayoutDashboard" },
   { href: "/admin/kurumlar", label: "Kurumlar", icon: "Building2" },
   { href: "/admin/kullanicilar", label: "Kullanıcılar", icon: "Users" },
+  { href: "/admin/ogrenciler", label: "Öğrenciler", icon: "GraduationCap" },
+  { href: "/admin/denetim-kayitlari", label: "Denetim Kayıtları", icon: "ShieldCheck" },
 ];
 
 export default async function AdminLayout({

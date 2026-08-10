@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Users } from "lucide-react";
 import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
@@ -47,25 +48,27 @@ export default async function OgretmenlerPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {ogretmenler.map((ogretmen) => (
-            <Card key={ogretmen.id} className="border-border/60">
-              <CardContent className="p-5">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-11 w-11">
-                    <AvatarFallback className="bg-primary/12 text-primary font-semibold">
-                      {ogretmen.adSoyad.slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">{ogretmen.adSoyad}</p>
-                    <p className="truncate text-xs text-muted-foreground">{ogretmen.email}</p>
+            <Link key={ogretmen.id} href={`/mudur/ogretmen/${ogretmen.id}`}>
+              <Card className="border-border/60 transition-all hover:-translate-y-0.5 hover:shadow-md">
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-11 w-11">
+                      <AvatarFallback className="bg-primary/12 text-primary font-semibold">
+                        {ogretmen.adSoyad.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">{ogretmen.adSoyad}</p>
+                      <p className="truncate text-xs text-muted-foreground">{ogretmen.email}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-                  <Badge variant="secondary">{ogretmen._count.classroomsTaught} sınıf</Badge>
-                  <Badge variant="secondary">{ogretmen._count.sessionLogs} ders kaydı</Badge>
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+                    <Badge variant="secondary">{ogretmen._count.classroomsTaught} sınıf</Badge>
+                    <Badge variant="secondary">{ogretmen._count.sessionLogs} ders kaydı</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       )}

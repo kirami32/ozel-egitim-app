@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { GraduationCap } from "lucide-react";
 import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
@@ -53,31 +54,33 @@ export default async function OgrencilerPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {ogrenciler.map((ogrenci) => (
-            <Card key={ogrenci.id} className="border-border/60">
-              <CardContent className="flex items-start gap-3 p-5">
-                <Avatar className="h-11 w-11">
-                  <AvatarFallback className="bg-accent/40 text-accent-foreground font-semibold">
-                    {ogrenci.adSoyad.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{ogrenci.adSoyad}</p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {ogrenci.classroom?.ad ?? "Sınıf atanmadı"}
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {ogrenci.taniKategorisi && (
-                      <Badge variant="secondary" className="text-[10px]">
-                        {ogrenci.taniKategorisi}
+            <Link key={ogrenci.id} href={`/mudur/ogrenci/${ogrenci.id}`}>
+              <Card className="border-border/60 transition-all hover:-translate-y-0.5 hover:shadow-md">
+                <CardContent className="flex items-start gap-3 p-5">
+                  <Avatar className="h-11 w-11">
+                    <AvatarFallback className="bg-accent/40 text-accent-foreground font-semibold">
+                      {ogrenci.adSoyad.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold">{ogrenci.adSoyad}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {ogrenci.classroom?.ad ?? "Sınıf atanmadı"}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {ogrenci.taniKategorisi && (
+                        <Badge variant="secondary" className="text-[10px]">
+                          {ogrenci.taniKategorisi}
+                        </Badge>
+                      )}
+                      <Badge variant="outline" className="text-[10px]">
+                        {ogrenci.veli ? `Veli: ${ogrenci.veli.adSoyad}` : "Veli atanmadı"}
                       </Badge>
-                    )}
-                    <Badge variant="outline" className="text-[10px]">
-                      {ogrenci.veli ? `Veli: ${ogrenci.veli.adSoyad}` : "Veli atanmadı"}
-                    </Badge>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       )}
