@@ -26,6 +26,7 @@ export default async function VeliOgrenciDetayPage({
           teacher: { select: { adSoyad: true } },
         },
       },
+      attendanceRecords: { orderBy: { tarih: "desc" } },
     },
   });
 
@@ -53,6 +54,7 @@ export default async function VeliOgrenciDetayPage({
         sinifAdi={ogrenci.classroom?.ad ?? null}
         taniKategorisi={ogrenci.taniKategorisi}
         sessionLogs={ogrenci.sessionLogs}
+        attendanceRecords={ogrenci.attendanceRecords}
         ogretmenAdiGoster
         ustBaslikSagi={
           <Button asChild>

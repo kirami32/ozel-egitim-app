@@ -16,6 +16,13 @@ enum Role {
   VELI
 }
 
+enum AttendanceStatus {
+  VAR
+  YOK
+  GEC
+  IZINLI
+}
+
 model Institution {
   id        String   @id @default(cuid())
   ad        String
@@ -54,6 +61,8 @@ model User {
   children Student[] @relation("StudentParent")
 
   auditLogs AuditLog[]
+
+  attendanceRecordsCreated Attendance[] @relation("AttendanceRecorder")
 
   @@index([institutionId])
   @@map("users")
@@ -96,6 +105,7 @@ model Student {
   veli   User?   @relation("StudentParent", fields: [veliId], references: [id], onDelete: SetNull)
 
   sessionLogs SessionLog[]
+  attendanceRecords Attendance[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -104,6 +114,28 @@ model Student {
   @@index([classroomId])
   @@index([veliId])
   @@map("students")
+}
+
+// Gunluk devam/devamsizlik kaydi - ogretmen tarafindan sinif icin girilir
+model Attendance {
+  id       String           @id @default(cuid())
+  tarih    DateTime // gun bazinda (saat kismi 00:00'a normallestirilir)
+  durum    AttendanceStatus
+  aciklama String?
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  recordedById String
+  recordedBy   User   @relation("AttendanceRecorder", fields: [recordedById], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, tarih])
+  @@index([studentId])
+  @@index([tarih])
+  @@map("attendance_records")
 }
 
 model BehaviorTag {

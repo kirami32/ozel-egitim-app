@@ -29,9 +29,15 @@ const styles = StyleSheet.create({
   baslikSatiri: { marginBottom: 20, borderBottom: "2 solid #4E9C88", paddingBottom: 12 },
   baslik: { fontSize: 18, fontFamily: FONT_AILESI, fontWeight: 700, marginBottom: 2 },
   altBaslik: { fontSize: 10, color: "#6B7280" },
-  ozetSatiri: { flexDirection: "row", justifyContent: "space-between", marginBottom: 20 },
+  ozetSatiri: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    rowGap: 8,
+    marginBottom: 20,
+  },
   ozetKutu: {
-    width: "31%",
+    width: "23%",
     padding: 10,
     backgroundColor: "#F0F7F5",
     borderRadius: 8,
@@ -73,12 +79,18 @@ interface RaporVerisi {
   ortalamaVerimlilik: string;
   toplamKayit: number;
   enSikEtiket: string;
+  devamOrani: string;
   kayitlar: {
     tarih: string;
     konu: string | null;
     puan: number;
     not: string | null;
     etiketler: { ad: string; renk: string }[];
+  }[];
+  devamKayitlari: {
+    tarih: string;
+    durum: string;
+    aciklama: string | null;
   }[];
 }
 
@@ -108,6 +120,10 @@ export function OgrenciRaporPdf({ veri }: { veri: RaporVerisi }) {
             <Text style={styles.ozetDeger}>{veri.enSikEtiket}</Text>
             <Text style={styles.ozetEtiket}>En Sık Gözlemlenen Davranış</Text>
           </View>
+          <View style={styles.ozetKutu}>
+            <Text style={styles.ozetDeger}>{veri.devamOrani}</Text>
+            <Text style={styles.ozetEtiket}>Devam Oranı</Text>
+          </View>
         </View>
 
         <Text style={styles.bolumBaslik}>Ders Kayıtları</Text>
@@ -130,6 +146,22 @@ export function OgrenciRaporPdf({ veri }: { veri: RaporVerisi }) {
             {kayit.not && <Text style={styles.kayitNot}>{kayit.not}</Text>}
           </View>
         ))}
+
+        {veri.devamKayitlari.length > 0 && (
+          <>
+            <Text style={styles.bolumBaslik} break>
+              Devam Durumu (Son Kayıtlar)
+            </Text>
+            {veri.devamKayitlari.map((kayit, i) => (
+              <View key={i} style={styles.kayitUst} wrap={false}>
+                <Text style={{ fontSize: 9, color: "#374151" }}>
+                  {kayit.tarih} — {kayit.durum}
+                  {kayit.aciklama ? ` (${kayit.aciklama})` : ""}
+                </Text>
+              </View>
+            ))}
+          </>
+        )}
 
         <Text style={styles.altBilgi} fixed>
           Bu rapor Özel Eğitim Takip Sistemi tarafından otomatik oluşturulmuştur. İçerik gizlidir,

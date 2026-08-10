@@ -6,6 +6,7 @@ const NAV: NavOgesi[] = [
   { href: "/mudur/ogretmenler", label: "Öğretmenler", icon: "Users" },
   { href: "/mudur/siniflar", label: "Sınıflar", icon: "School" },
   { href: "/mudur/ogrenciler", label: "Öğrenciler", icon: "GraduationCap" },
+  { href: "/mudur/devamsizlik", label: "Devam / Devamsızlık", icon: "CalendarCheck" },
 ];
 
 export default async function MudurLayout({

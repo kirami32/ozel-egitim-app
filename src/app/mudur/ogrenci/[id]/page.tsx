@@ -26,6 +26,7 @@ export default async function MudurOgrenciDetayPage({
           teacher: { select: { adSoyad: true } },
         },
       },
+      attendanceRecords: { orderBy: { tarih: "desc" } },
     },
   });
 
@@ -54,6 +55,7 @@ export default async function MudurOgrenciDetayPage({
         veliAdi={ogrenci.veli?.adSoyad}
         taniKategorisi={ogrenci.taniKategorisi}
         sessionLogs={ogrenci.sessionLogs}
+        attendanceRecords={ogrenci.attendanceRecords}
         ogretmenAdiGoster
       />
     </div>
