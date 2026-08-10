@@ -289,10 +289,13 @@ model SessionLogBehaviorTag {
 // KVKK: hassas veriye kim ne zaman eristi - denetim kaydi
 model AuditLog {
   id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  eylem      String   // ornek: "STUDENT_VIEW", "SESSION_LOG_CREATE"
-  hedefTur   String   // ornek: "Student", "SessionLog"
+  // userId null olabilir: basarisiz giris denemesi olmayan/bilinmeyen bir
+  // e-postayla yapilmis olabilir, ya da kullanici sonradan silinmis olabilir
+  // (SetNull ile kayit korunur, denetim gecmisi asla silinmez).
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  eylem      String   // ornek: "STUDENT_VIEW", "SESSION_LOG_CREATE", "LOGIN_SUCCESS"
+  hedefTur   String   // ornek: "Student", "SessionLog", "Auth"
   hedefId    String?
   detay      Json?
   ipAdresi   String?

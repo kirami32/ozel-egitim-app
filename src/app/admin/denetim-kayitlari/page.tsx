@@ -1,10 +1,15 @@
-import { ShieldCheck } from "lucide-react";
+import { AlertTriangle, ShieldCheck } from "lucide-react";
 import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
+import type { Role } from "@/generated/prisma/enums";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { SayfaBasligi } from "@/components/sayfa-basligi";
+import { StatCard } from "@/components/stat-card";
+import { KisiAvatari } from "@/components/kisi-avatari";
+import { RolRozeti } from "@/components/rol-rozeti";
 import {
   Table,
   TableBody,
@@ -13,41 +18,80 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
+import { eylemEtiketi, eylemRengi, GUVENLIK_EYLEMLERI } from "@/lib/denetim";
+import { DenetimFiltreleri } from "./denetim-filtreleri";
 
-const EYLEM_ETIKETLERI: Record<string, string> = {
-  INSTITUTION_CREATE: "Kurum Oluşturuldu",
-  INSTITUTION_ACTIVATE: "Kurum Aktifleştirildi",
-  INSTITUTION_DEACTIVATE: "Kurum Pasifleştirildi",
-  USER_CREATE: "Kullanıcı Oluşturuldu",
-  CLASSROOM_CREATE: "Sınıf Oluşturuldu",
-  STUDENT_CREATE: "Öğrenci Oluşturuldu",
-  STUDENT_VIEW: "Öğrenci Profili Görüntülendi",
-  SESSION_LOG_CREATE: "Ders Kaydı Eklendi",
-  ATTENDANCE_RECORD: "Devam Durumu Girildi",
-  REPORT_DOWNLOAD: "PDF Rapor İndirildi",
-};
+const AZAMI_KAYIT = 300;
 
-const EYLEM_RENKLERI: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
-  INSTITUTION_CREATE: "default",
-  INSTITUTION_ACTIVATE: "default",
-  INSTITUTION_DEACTIVATE: "destructive",
-  USER_CREATE: "default",
-  CLASSROOM_CREATE: "secondary",
-  STUDENT_CREATE: "secondary",
-  STUDENT_VIEW: "outline",
-  SESSION_LOG_CREATE: "default",
-  ATTENDANCE_RECORD: "secondary",
-  REPORT_DOWNLOAD: "outline",
-};
+function gunBasi(tarihStr: string): Date {
+  return new Date(`${tarihStr}T00:00:00.000Z`);
+}
 
-export default async function DenetimKayitlariPage() {
+function gunSonrasi(tarihStr: string): Date {
+  const t = gunBasi(tarihStr);
+  t.setUTCDate(t.getUTCDate() + 1);
+  return t;
+}
+
+export default async function DenetimKayitlariPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    q?: string;
+    eylem?: string;
+    rol?: string;
+    baslangic?: string;
+    bitis?: string;
+  }>;
+}) {
   await oturumGerekli(["SUPER_ADMIN"]);
+  const { q, eylem, rol, baslangic, bitis } = await searchParams;
 
-  const kayitlar = await prisma.auditLog.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 300,
-    include: { user: { select: { adSoyad: true, email: true, rol: true } } },
-  });
+  const where: Prisma.AuditLogWhereInput = {
+    eylem: eylem || undefined,
+    user: rol ? { rol: rol as Role } : undefined,
+    createdAt: {
+      gte: baslangic ? gunBasi(baslangic) : undefined,
+      lt: bitis ? gunSonrasi(bitis) : undefined,
+    },
+    ...(q?.trim()
+      ? {
+          OR: [
+            { user: { adSoyad: { contains: q.trim(), mode: "insensitive" } } },
+            { user: { email: { contains: q.trim(), mode: "insensitive" } } },
+            { ipAdresi: { contains: q.trim() } },
+          ],
+        }
+      : {}),
+  };
+
+  const bugunBaslangic = new Date();
+  bugunBaslangic.setUTCHours(0, 0, 0, 0);
+  const yirmiDortSaatOnce = new Date();
+  yirmiDortSaatOnce.setHours(yirmiDortSaatOnce.getHours() - 24);
+
+  const [kayitlar, toplamKayitSayisi, bugunGirisSayisi, guvenlikOlaySayisi] =
+    await Promise.all([
+      prisma.auditLog.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        take: AZAMI_KAYIT,
+        include: {
+          user: { select: { id: true, adSoyad: true, email: true, rol: true, avatarSurum: true } },
+        },
+      }),
+      prisma.auditLog.count({ where }),
+      prisma.auditLog.count({
+        where: { eylem: "LOGIN_SUCCESS", createdAt: { gte: bugunBaslangic } },
+      }),
+      prisma.auditLog.count({
+        where: {
+          eylem: { in: Array.from(GUVENLIK_EYLEMLERI) },
+          createdAt: { gte: yirmiDortSaatOnce },
+        },
+      }),
+    ]);
 
   return (
     <div className="space-y-6">
@@ -55,55 +99,123 @@ export default async function DenetimKayitlariPage() {
         icon={ShieldCheck}
         renk="mor"
         baslik="Denetim Kayıtları"
-        aciklama="Kim, ne zaman, hangi veriye eriştiğinin veya değiştirdiğinin dökümü (KVKK uyumluluğu için tutulur). Son 300 kayıt gösteriliyor."
+        aciklama="Kim, ne zaman, hangi veriye eriştiğinin veya değiştirdiğinin dökümü (KVKK uyumluluğu için tutulur)."
       />
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard baslik="Toplam Kayıt" deger={toplamKayitSayisi} icon="ShieldCheck" renk="primary" index={0} />
+        <StatCard baslik="Bugün Giriş Yapan" deger={bugunGirisSayisi} icon="Users" renk="accent" index={1} />
+        <StatCard
+          baslik="Güvenlik Olayı (24s)"
+          deger={guvenlikOlaySayisi}
+          icon="ShieldCheck"
+          renk={guvenlikOlaySayisi > 0 ? "chart-4" : "secondary"}
+          index={2}
+        />
+      </div>
+
+      <DenetimFiltreleri />
 
       {kayitlar.length === 0 ? (
         <EmptyState
           icon={ShieldCheck}
-          baslik="Henüz denetim kaydı yok"
-          aciklama="Kullanıcılar sistemde işlem yaptıkça burada listelenecek."
+          baslik="Bu filtrelerle kayıt bulunamadı"
+          aciklama="Filtreleri temizleyip tekrar deneyin, ya da kullanıcılar sistemde işlem yaptıkça burada listelenecek."
         />
       ) : (
         <Card>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Tarih</TableHead>
-                  <TableHead>Kullanıcı</TableHead>
-                  <TableHead>Eylem</TableHead>
-                  <TableHead>Hedef</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {kayitlar.map((kayit) => (
-                  <TableRow key={kayit.id}>
-                    <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-                      {new Intl.DateTimeFormat("tr-TR", {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      }).format(kayit.createdAt)}
-                    </TableCell>
-                    <TableCell>
-                      <p className="text-sm font-medium">{kayit.user.adSoyad}</p>
-                      <p className="text-xs text-muted-foreground">{kayit.user.email}</p>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={EYLEM_RENKLERI[kayit.eylem] ?? "secondary"}>
-                        {EYLEM_ETIKETLERI[kayit.eylem] ?? kayit.eylem}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {kayit.hedefTur}
-                      {kayit.hedefId && (
-                        <span className="ml-1 font-mono">#{kayit.hedefId.slice(-6)}</span>
-                      )}
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tarih</TableHead>
+                    <TableHead>Kullanıcı</TableHead>
+                    <TableHead>Eylem</TableHead>
+                    <TableHead>Hedef</TableHead>
+                    <TableHead>IP Adresi</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {kayitlar.map((kayit) => {
+                    const guvenlikOlayiMi = GUVENLIK_EYLEMLERI.has(kayit.eylem);
+                    const denenenEposta =
+                      kayit.detay && typeof kayit.detay === "object" && "email" in kayit.detay
+                        ? String((kayit.detay as Record<string, unknown>).email)
+                        : null;
+                    return (
+                      <TableRow
+                        key={kayit.id}
+                        className={cn(guvenlikOlayiMi && "bg-destructive/[0.04]")}
+                      >
+                        <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                          {new Intl.DateTimeFormat("tr-TR", {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          }).format(kayit.createdAt)}
+                        </TableCell>
+                        <TableCell>
+                          {kayit.user ? (
+                            <div className="flex items-center gap-2.5">
+                              <KisiAvatari
+                                tur="kullanici"
+                                id={kayit.user.id}
+                                adSoyad={kayit.user.adSoyad}
+                                avatarSurum={kayit.user.avatarSurum}
+                                size="sm"
+                              />
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-medium">{kayit.user.adSoyad}</p>
+                                <p className="truncate text-xs text-muted-foreground">
+                                  {kayit.user.email}
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2.5">
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+                                <AlertTriangle className="h-4 w-4" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-muted-foreground">Bilinmiyor</p>
+                                {denenenEposta && (
+                                  <p className="truncate text-xs text-muted-foreground/70">
+                                    denenen: {denenenEposta}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <Badge variant={eylemRengi(kayit.eylem)}>
+                              {eylemEtiketi(kayit.eylem)}
+                            </Badge>
+                            {kayit.user && <RolRozeti rol={kayit.user.rol} className="text-[10px]" />}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {kayit.hedefTur}
+                          {kayit.hedefId && (
+                            <span className="ml-1 font-mono">#{kayit.hedefId.slice(-6)}</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-muted-foreground">
+                          {kayit.ipAdresi ?? "—"}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+            {toplamKayitSayisi > AZAMI_KAYIT && (
+              <p className="border-t border-border px-4 py-3 text-center text-xs text-muted-foreground">
+                {toplamKayitSayisi} kayıttan en son {AZAMI_KAYIT} tanesi gösteriliyor. Daha eskilere
+                ulaşmak için tarih filtresini daraltın.
+              </p>
+            )}
           </CardContent>
         </Card>
       )}

@@ -30,6 +30,13 @@ export async function profilAvatariKaydet(dataUrl: string | null) {
     });
   }
 
+  await denetimKaydiOlustur({
+    userId: kullanici.id,
+    eylem: dataUrl === null ? "PROFIL_AVATAR_DELETE" : "PROFIL_AVATAR_UPDATE",
+    hedefTur: "User",
+    hedefId: kullanici.id,
+  });
+
   revalidatePath("/profil");
   return { basarili: true };
 }
@@ -45,6 +52,14 @@ export async function profilBilgisiGuncelle(formData: FormData) {
   await prisma.user.update({
     where: { id: kullanici.id },
     data: { adSoyad: veri.adSoyad },
+  });
+
+  await denetimKaydiOlustur({
+    userId: kullanici.id,
+    eylem: "PROFIL_GUNCELLE",
+    hedefTur: "User",
+    hedefId: kullanici.id,
+    detay: { yeniAdSoyad: veri.adSoyad },
   });
 
   revalidatePath("/profil");

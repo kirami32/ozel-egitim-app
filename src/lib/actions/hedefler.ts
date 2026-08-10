@@ -89,6 +89,14 @@ export async function hedefDurumGuncelle(
     },
   });
 
+  await denetimKaydiOlustur({
+    userId: kullanici.id,
+    eylem: "HEDEF_DURUM_GUNCELLE",
+    hedefTur: "Hedef",
+    hedefId,
+    detay: { studentId: ogrenciId, yeniDurum: durum },
+  });
+
   ogrenciYollariniTazele(ogrenciId);
   return { basarili: true };
 }

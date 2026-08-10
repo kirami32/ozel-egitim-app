@@ -80,6 +80,14 @@ export async function veliNotuSil(notId: string, ogrenciId: string) {
 
   await prisma.parentNote.delete({ where: { id: notId } });
 
+  await denetimKaydiOlustur({
+    userId: kullanici.id,
+    eylem: "VELI_NOTU_DELETE",
+    hedefTur: "ParentNote",
+    hedefId: notId,
+    detay: { studentId: ogrenciId, yazariMi: not.yazarId === kullanici.id },
+  });
+
   ogrenciYollariniTazele(ogrenciId);
   return { basarili: true };
 }
