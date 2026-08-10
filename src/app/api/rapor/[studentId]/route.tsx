@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { oturumGerekli } from "@/lib/rbac";
 import { denetimKaydiOlustur } from "@/lib/audit";
 import { OgrenciRaporPdf } from "@/lib/ogrenci-rapor-pdf";
+import { DEVAM_DURUM_META, devamOraniHesapla } from "@/lib/devam";
 
 export async function GET(
   _request: Request,
@@ -20,6 +21,10 @@ export async function GET(
       sessionLogs: {
         orderBy: { tarih: "desc" },
         include: { behaviorTags: { include: { behaviorTag: true } } },
+      },
+      attendanceRecords: {
+        orderBy: { tarih: "desc" },
+        take: 30,
       },
     },
   });
@@ -58,6 +63,10 @@ export async function GET(
         ortalamaVerimlilik,
         toplamKayit: ogrenci.sessionLogs.length,
         enSikEtiket,
+        devamOrani: (() => {
+          const oran = devamOraniHesapla(ogrenci.attendanceRecords);
+          return oran !== null ? `%${oran}` : "—";
+        })(),
         kayitlar: ogrenci.sessionLogs.map((kayit) => ({
           tarih: new Intl.DateTimeFormat("tr-TR", { dateStyle: "long" }).format(kayit.tarih),
           konu: kayit.islenenKonu,
@@ -67,6 +76,11 @@ export async function GET(
             ad: iliski.behaviorTag.ad,
             renk: iliski.behaviorTag.renkKodu,
           })),
+        })),
+        devamKayitlari: ogrenci.attendanceRecords.map((kayit) => ({
+          tarih: new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium" }).format(kayit.tarih),
+          durum: DEVAM_DURUM_META[kayit.durum].etiket,
+          aciklama: kayit.aciklama,
         })),
       }}
     />

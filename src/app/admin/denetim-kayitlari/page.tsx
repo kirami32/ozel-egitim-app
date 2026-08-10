@@ -22,6 +22,7 @@ const EYLEM_ETIKETLERI: Record<string, string> = {
   STUDENT_CREATE: "Öğrenci Oluşturuldu",
   STUDENT_VIEW: "Öğrenci Profili Görüntülendi",
   SESSION_LOG_CREATE: "Ders Kaydı Eklendi",
+  ATTENDANCE_RECORD: "Devam Durumu Girildi",
   REPORT_DOWNLOAD: "PDF Rapor İndirildi",
 };
 
@@ -34,6 +35,7 @@ const EYLEM_RENKLERI: Record<string, "default" | "secondary" | "outline" | "dest
   STUDENT_CREATE: "secondary",
   STUDENT_VIEW: "outline",
   SESSION_LOG_CREATE: "default",
+  ATTENDANCE_RECORD: "secondary",
   REPORT_DOWNLOAD: "outline",
 };
 

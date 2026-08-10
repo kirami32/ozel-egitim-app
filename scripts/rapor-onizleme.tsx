@@ -17,6 +17,12 @@ async function main() {
         ortalamaVerimlilik: "8.0",
         toplamKayit: 6,
         enSikEtiket: "Odak Kaybı",
+        devamOrani: "%92",
+        devamKayitlari: [
+          { tarih: "9 Ağustos 2026", durum: "Geldi", aciklama: null },
+          { tarih: "8 Ağustos 2026", durum: "Geldi", aciklama: null },
+          { tarih: "7 Ağustos 2026", durum: "Geç Geldi", aciklama: "Servis gecikmesi" },
+        ],
         kayitlar: [
           {
             tarih: "9 Ağustos 2026",

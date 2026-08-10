@@ -1,10 +1,14 @@
-import { TrendingUp, Tags, History } from "lucide-react";
+import { TrendingUp, Tags, History, CalendarCheck } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/empty-state";
 import { VerimlilikTrendChart } from "@/components/verimlilik-trend-chart";
 import { DavranisDagilimChart } from "@/components/davranis-dagilim-chart";
+import { DevamDurumuChart } from "@/components/devam-durumu-chart";
+import { DEVAM_DURUM_META, devamOraniHesapla } from "@/lib/devam";
+import { cn } from "@/lib/utils";
+import type { AttendanceStatus } from "@/generated/prisma/enums";
 
 interface DavranisEtiketiIliski {
   behaviorTagId: string;
@@ -21,12 +25,20 @@ interface DersKaydi {
   teacher?: { adSoyad: string };
 }
 
+interface DevamKaydi {
+  id: string;
+  tarih: Date;
+  durum: AttendanceStatus;
+  aciklama: string | null;
+}
+
 interface OgrenciProfilGorunumuProps {
   adSoyad: string;
   sinifAdi: string | null;
   veliAdi?: string | null;
   taniKategorisi: string | null;
   sessionLogs: DersKaydi[];
+  attendanceRecords?: DevamKaydi[];
   ustBaslikSagi?: React.ReactNode;
   ogretmenAdiGoster?: boolean;
 }
@@ -37,6 +49,7 @@ export function OgrenciProfilGorunumu({
   veliAdi,
   taniKategorisi,
   sessionLogs,
+  attendanceRecords = [],
   ustBaslikSagi,
   ogretmenAdiGoster = false,
 }: OgrenciProfilGorunumuProps) {
@@ -68,6 +81,20 @@ export function OgrenciProfilGorunumu({
     sessionLogs.length > 0
       ? (sessionLogs.reduce((t, k) => t + k.verimlilikPuani, 0) / sessionLogs.length).toFixed(1)
       : "—";
+
+  const devamDagilimSayaci: Record<AttendanceStatus, number> = { VAR: 0, YOK: 0, GEC: 0, IZINLI: 0 };
+  for (const kayit of attendanceRecords) devamDagilimSayaci[kayit.durum]++;
+  const devamDagilimVerisi = (Object.keys(devamDagilimSayaci) as AttendanceStatus[])
+    .filter((durum) => devamDagilimSayaci[durum] > 0)
+    .map((durum) => ({
+      etiket: DEVAM_DURUM_META[durum].etiket,
+      sayi: devamDagilimSayaci[durum],
+      renk: DEVAM_DURUM_META[durum].renk,
+    }));
+  const devamOrani = devamOraniHesapla(attendanceRecords);
+  const sonDevamKayitlari = [...attendanceRecords]
+    .sort((a, b) => b.tarih.getTime() - a.tarih.getTime())
+    .slice(0, 10);
 
   return (
     <div className="space-y-6">
@@ -140,6 +167,58 @@ export function OgrenciProfilGorunumu({
                   )}
                 </div>
               ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-border/60">
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <CalendarCheck className="h-4 w-4 text-primary" />
+            Devam Durumu
+          </CardTitle>
+          <Badge variant="outline">
+            Devam Oranı: {devamOrani !== null ? `%${devamOrani}` : "—"}
+          </Badge>
+        </CardHeader>
+        <CardContent>
+          {attendanceRecords.length === 0 ? (
+            <EmptyState
+              icon={CalendarCheck}
+              baslik="Henüz devam kaydı yok"
+              aciklama="Öğretmen devam durumu girdikçe burada özetlenecek."
+            />
+          ) : (
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <DevamDurumuChart veri={devamDagilimVerisi} />
+              <div className="space-y-2">
+                {sonDevamKayitlari.map((kayit) => (
+                  <div
+                    key={kayit.id}
+                    className="flex items-center justify-between rounded-xl border border-border px-3 py-2 text-sm"
+                  >
+                    <div>
+                      <p className="font-medium">
+                        {new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium" }).format(
+                          kayit.tarih
+                        )}
+                      </p>
+                      {kayit.aciklama && (
+                        <p className="text-xs text-muted-foreground">{kayit.aciklama}</p>
+                      )}
+                    </div>
+                    <span
+                      className={cn(
+                        "rounded-full px-2.5 py-0.5 text-[11px] font-medium",
+                        DEVAM_DURUM_META[kayit.durum].badgeSinif
+                      )}
+                    >
+                      {DEVAM_DURUM_META[kayit.durum].etiket}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </CardContent>

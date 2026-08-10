@@ -28,6 +28,7 @@ export default async function AdminOgrenciDetayPage({
           teacher: { select: { adSoyad: true } },
         },
       },
+      attendanceRecords: { orderBy: { tarih: "desc" } },
     },
   });
 
@@ -56,6 +57,7 @@ export default async function AdminOgrenciDetayPage({
         veliAdi={ogrenci.veli?.adSoyad}
         taniKategorisi={ogrenci.taniKategorisi}
         sessionLogs={ogrenci.sessionLogs}
+        attendanceRecords={ogrenci.attendanceRecords}
         ogretmenAdiGoster
         ustBaslikSagi={<Badge variant="outline">{ogrenci.institution.ad}</Badge>}
       />

@@ -24,6 +24,7 @@ export default async function OgrenciProfilPage({
         orderBy: { tarih: "desc" },
         include: { behaviorTags: { include: { behaviorTag: true } } },
       },
+      attendanceRecords: { orderBy: { tarih: "desc" } },
     },
   });
 
@@ -56,6 +57,7 @@ export default async function OgrenciProfilPage({
             veliAdi={ogrenci.veli?.adSoyad}
             taniKategorisi={ogrenci.taniKategorisi}
             sessionLogs={ogrenci.sessionLogs}
+            attendanceRecords={ogrenci.attendanceRecords}
           />
         </div>
 
