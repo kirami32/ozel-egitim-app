@@ -27,6 +27,8 @@ export const EYLEM_META: Record<string, EylemMeta> = {
   },
 
   USER_CREATE: { etiket: "Kullanıcı Oluşturuldu", renk: "default", kategori: "Kullanıcı" },
+  USER_ACTIVATE: { etiket: "Kullanıcı Aktifleştirildi", renk: "default", kategori: "Kullanıcı" },
+  USER_DEACTIVATE: { etiket: "Kullanıcı Pasifleştirildi", renk: "destructive", kategori: "Kullanıcı" },
   PASSWORD_CHANGE: { etiket: "Şifre Değiştirildi", renk: "secondary", kategori: "Kullanıcı" },
   PROFIL_GUNCELLE: { etiket: "Profil Bilgisi Güncellendi", renk: "secondary", kategori: "Kullanıcı" },
   PROFIL_AVATAR_UPDATE: { etiket: "Profil Fotoğrafı Değişti", renk: "outline", kategori: "Kullanıcı" },

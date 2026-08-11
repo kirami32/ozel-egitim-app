@@ -26,6 +26,15 @@ export async function GET(
         orderBy: { tarih: "desc" },
         take: 30,
       },
+      hedefler: {
+        orderBy: [{ durum: "asc" }, { createdAt: "desc" }],
+        include: {
+          ilerlemeKayitlari: {
+            orderBy: { tarih: "desc" },
+            take: 8,
+          },
+        },
+      },
     },
   });
 
@@ -81,6 +90,20 @@ export async function GET(
           tarih: new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium" }).format(kayit.tarih),
           durum: DEVAM_DURUM_META[kayit.durum].etiket,
           aciklama: kayit.aciklama,
+        })),
+        hedefler: ogrenci.hedefler.map((hedef) => ({
+          baslik: hedef.baslik,
+          aciklama: hedef.aciklama,
+          kategori: hedef.kategori,
+          durum: hedef.durum,
+          hedefTarihi: hedef.hedefTarihi
+            ? new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium" }).format(hedef.hedefTarihi)
+            : null,
+          ilerleme: hedef.ilerlemeKayitlari.map((kayit) => ({
+            tarih: new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium" }).format(kayit.tarih),
+            seviye: kayit.seviye,
+            notu: kayit.notu,
+          })),
         })),
       }}
     />

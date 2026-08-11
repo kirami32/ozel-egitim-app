@@ -61,3 +61,26 @@ export async function kullaniciOlustur(formData: FormData) {
   revalidatePath("/mudur/ogretmenler");
   return { basarili: true };
 }
+
+export async function kullaniciDurumDegistir(hedefKullaniciId: string, aktifMi: boolean) {
+  const kullanici = await oturumGerekli(["SUPER_ADMIN"]);
+
+  if (hedefKullaniciId === kullanici.id) {
+    throw new Error("Kendi hesabınızı pasife alamazsınız.");
+  }
+
+  await prisma.user.update({
+    where: { id: hedefKullaniciId },
+    data: { aktifMi },
+  });
+
+  await denetimKaydiOlustur({
+    userId: kullanici.id,
+    eylem: aktifMi ? "USER_ACTIVATE" : "USER_DEACTIVATE",
+    hedefTur: "User",
+    hedefId: hedefKullaniciId,
+  });
+
+  revalidatePath("/admin/kullanicilar");
+  return { basarili: true };
+}

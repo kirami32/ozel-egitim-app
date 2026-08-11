@@ -1,5 +1,29 @@
 import path from "node:path";
 import { Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer";
+import { HEDEF_KATEGORI_META, BASARI_SEVIYESI_META, HEDEF_DURUM_META } from "@/lib/hedef";
+import type { BasariSeviyesi, HedefDurum, HedefKategori } from "@/generated/prisma/enums";
+
+/**
+ * react-pdf kendi başına bir CSS motoru çalıştırmıyor, bu yüzden web
+ * tarafındaki `var(--chart-N)` renkleri burada çözülemiyor — kategorilere
+ * ve başarı düzeylerine PDF'e özel sabit hex renkler tanımlıyoruz. Etiket
+ * metinleri (Türkçe adlar) yine tek kaynaktan, lib/hedef.ts'den geliyor.
+ */
+const HEDEF_KATEGORI_RENK: Record<HedefKategori, string> = {
+  ILETISIM: "#4E9C88",
+  AKADEMIK: "#8B7FD1",
+  SOSYAL: "#E8A87C",
+  OZ_BAKIM: "#7FBF7F",
+  MOTOR: "#D1857F",
+  DAVRANIS: "#D9484F",
+};
+
+const BASARI_SEVIYESI_RENK: Record<BasariSeviyesi, string> = {
+  BAGIMSIZ: "#5FA872",
+  SOZEL_IPUCUYLA: "#D9A441",
+  FIZIKSEL_YARDIMLA: "#D1857F",
+  YAPAMADI: "#B0483F",
+};
 
 /**
  * Türkçe karakterler (ş, ğ, ı, İ) standart PDF fontlarının (Helvetica) karakter
@@ -69,6 +93,38 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
   altBilgi: { position: "absolute", bottom: 30, left: 40, right: 40, fontSize: 8, color: "#9CA3AF" },
+
+  hedefKart: {
+    border: "1 solid #E5E7EB",
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 8,
+  },
+  hedefUst: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+  hedefBaslik: { fontSize: 10, fontFamily: FONT_AILESI, fontWeight: 700, flex: 1, marginRight: 8 },
+  hedefEtiketSatiri: { flexDirection: "row", gap: 4 },
+  hedefEtiket: {
+    fontSize: 7,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    color: "#FFFFFF",
+  },
+  hedefDurumEtiket: {
+    fontSize: 7,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    backgroundColor: "#F3F4F6",
+    color: "#4B5563",
+  },
+  hedefAciklama: { fontSize: 9, color: "#6B7280", marginTop: 4 },
+  hedefTarih: { fontSize: 8, color: "#9CA3AF", marginTop: 3 },
+  ilerlemeBasligi: { fontSize: 8, fontFamily: FONT_AILESI, fontWeight: 700, marginTop: 6, color: "#374151" },
+  ilerlemeSatiri: { flexDirection: "row", alignItems: "center", marginTop: 3, gap: 5 },
+  ilerlemeNoktasi: { width: 6, height: 6, borderRadius: 3 },
+  ilerlemeMetin: { fontSize: 8, color: "#4B5563" },
+  ilerlemeNot: { fontSize: 8, color: "#9CA3AF" },
 });
 
 interface RaporVerisi {
@@ -91,6 +147,14 @@ interface RaporVerisi {
     tarih: string;
     durum: string;
     aciklama: string | null;
+  }[];
+  hedefler: {
+    baslik: string;
+    aciklama: string | null;
+    kategori: HedefKategori;
+    durum: HedefDurum;
+    hedefTarihi: string | null;
+    ilerleme: { tarih: string; seviye: BasariSeviyesi; notu: string | null }[];
   }[];
 }
 
@@ -126,7 +190,60 @@ export function OgrenciRaporPdf({ veri }: { veri: RaporVerisi }) {
           </View>
         </View>
 
-        <Text style={styles.bolumBaslik}>Ders Kayıtları</Text>
+        {veri.hedefler.length > 0 && (
+          <View>
+            <Text style={styles.bolumBaslik}>BEP Hedefleri</Text>
+            {veri.hedefler.map((hedef, i) => (
+              <View key={i} style={styles.hedefKart} wrap={false}>
+                <View style={styles.hedefUst}>
+                  <Text style={styles.hedefBaslik}>{hedef.baslik}</Text>
+                  <View style={styles.hedefEtiketSatiri}>
+                    <Text
+                      style={{
+                        ...styles.hedefEtiket,
+                        backgroundColor: HEDEF_KATEGORI_RENK[hedef.kategori],
+                      }}
+                    >
+                      {HEDEF_KATEGORI_META[hedef.kategori].etiket}
+                    </Text>
+                    <Text style={styles.hedefDurumEtiket}>
+                      {HEDEF_DURUM_META[hedef.durum].etiket}
+                    </Text>
+                  </View>
+                </View>
+
+                {hedef.aciklama && <Text style={styles.hedefAciklama}>{hedef.aciklama}</Text>}
+                {hedef.hedefTarihi && (
+                  <Text style={styles.hedefTarih}>Hedef tarihi: {hedef.hedefTarihi}</Text>
+                )}
+
+                {hedef.ilerleme.length > 0 && (
+                  <>
+                    <Text style={styles.ilerlemeBasligi}>İlerleme Kayıtları</Text>
+                    {hedef.ilerleme.map((kayit, j) => (
+                      <View key={j} style={styles.ilerlemeSatiri}>
+                        <View
+                          style={{
+                            ...styles.ilerlemeNoktasi,
+                            backgroundColor: BASARI_SEVIYESI_RENK[kayit.seviye],
+                          }}
+                        />
+                        <Text style={styles.ilerlemeMetin}>
+                          {kayit.tarih} — {BASARI_SEVIYESI_META[kayit.seviye].kisaEtiket}
+                        </Text>
+                        {kayit.notu && <Text style={styles.ilerlemeNot}>· {kayit.notu}</Text>}
+                      </View>
+                    ))}
+                  </>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
+
+        <Text style={styles.bolumBaslik} break={veri.hedefler.length > 0}>
+          Ders Kayıtları
+        </Text>
         {veri.kayitlar.map((kayit, i) => (
           <View key={i} style={styles.kayit} wrap={false}>
             <View style={styles.kayitUst}>

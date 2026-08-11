@@ -2,12 +2,12 @@ import { Users } from "lucide-react";
 import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { SayfaBasligi } from "@/components/sayfa-basligi";
 import { KisiAvatari } from "@/components/kisi-avatari";
 import { RolRozeti } from "@/components/rol-rozeti";
 import { KullaniciEkleDialog } from "@/components/kullanici-ekle-dialog";
+import { KullaniciDurumSwitch } from "./kullanici-durum-switch";
 import {
   Table,
   TableBody,
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/table";
 
 export default async function KullanicilarPage() {
-  await oturumGerekli(["SUPER_ADMIN"]);
+  const kullanici = await oturumGerekli(["SUPER_ADMIN"]);
 
   const [kullanicilar, kurumlar] = await Promise.all([
     prisma.user.findMany({
@@ -96,9 +96,11 @@ export default async function KullanicilarPage() {
                       {k.institution?.ad ?? "—"}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={k.aktifMi ? "default" : "secondary"}>
-                        {k.aktifMi ? "Aktif" : "Pasif"}
-                      </Badge>
+                      <KullaniciDurumSwitch
+                        kullaniciId={k.id}
+                        aktifMi={k.aktifMi}
+                        kendisiMi={k.id === kullanici.id}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}

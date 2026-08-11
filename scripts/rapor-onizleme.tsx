@@ -23,6 +23,27 @@ async function main() {
           { tarih: "8 Ağustos 2026", durum: "Geldi", aciklama: null },
           { tarih: "7 Ağustos 2026", durum: "Geç Geldi", aciklama: "Servis gecikmesi" },
         ],
+        hedefler: [
+          {
+            baslik: "5 kelimeden oluşan cümle kurabilme",
+            aciklama: "Günlük rutin içinde en az 3 kez bağımsız cümle kurma hedeflenmektedir.",
+            kategori: "ILETISIM",
+            durum: "AKTIF",
+            hedefTarihi: "30 Eylül 2026",
+            ilerleme: [
+              { tarih: "9 Ağustos 2026", seviye: "SOZEL_IPUCUYLA", notu: "İki kez başarılı" },
+              { tarih: "5 Ağustos 2026", seviye: "FIZIKSEL_YARDIMLA", notu: null },
+            ],
+          },
+          {
+            baslik: "10'a kadar bağımsız sayabilme",
+            aciklama: null,
+            kategori: "AKADEMIK",
+            durum: "TAMAMLANDI",
+            hedefTarihi: "1 Ağustos 2026",
+            ilerleme: [{ tarih: "1 Ağustos 2026", seviye: "BAGIMSIZ", notu: "Hedef tamamlandı" }],
+          },
+        ],
         kayitlar: [
           {
             tarih: "9 Ağustos 2026",
