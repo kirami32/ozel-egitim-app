@@ -10,7 +10,8 @@
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
     "db:migrate": "prisma migrate deploy",
-    "docs": "tsx scripts/dokuman-olustur.tsx"
+    "docs": "tsx scripts/dokuman-olustur.tsx",
+    "docs:sunum": "tsx scripts/tanitim-sunumu-olustur.tsx"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.7.1",
