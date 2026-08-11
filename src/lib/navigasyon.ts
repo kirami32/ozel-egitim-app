@@ -48,6 +48,8 @@ export const ROL_NAV: Record<Role, NavOgesi[]> = {
       grup: "Takip",
     },
     { href: "/mudur/program", label: "Ders Programı", icon: "CalendarDays", grup: "Takip" },
+    { href: "/mudur/hedefler", label: "BEP Hedefleri", icon: "Target", grup: "Takip" },
+    { href: "/mudur/belgeler", label: "Belgeler", icon: "Paperclip", grup: "Takip" },
   ],
   OGRETMEN: [
     { href: "/ogretmen", label: "Öğrencilerim", icon: "Users", grup: "Genel" },
