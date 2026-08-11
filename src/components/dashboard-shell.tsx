@@ -58,6 +58,8 @@ export function DashboardShell({
   const aktifMi = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");
 
+  const cokGrupluMu = new Set(navOgeleri.map((o) => o.grup)).size > 1;
+
   return (
     <div className="flex min-h-screen w-full bg-background">
       {/* Masaüstü kenar çubuğu */}
@@ -74,30 +76,42 @@ export function DashboardShell({
         </div>
 
         <nav className="flex flex-1 flex-col gap-1">
-          {navOgeleri.map((oge) => {
+          {navOgeleri.map((oge, i) => {
             const aktif = aktifMi(oge.href);
             const Icon = IKON_HARITASI[oge.icon];
+            const grupDegisti = cokGrupluMu && oge.grup !== navOgeleri[i - 1]?.grup;
             return (
-              <Link
-                key={oge.href}
-                href={oge.href}
-                className={cn(
-                  "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                  aktif
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
+              <div key={oge.href}>
+                {grupDegisti && (
+                  <p
+                    className={cn(
+                      "px-3 pb-1 text-[10px] font-semibold tracking-wider text-muted-foreground/60 uppercase",
+                      i !== 0 && "mt-3"
+                    )}
+                  >
+                    {oge.grup}
+                  </p>
                 )}
-              >
-                {aktif && (
-                  <motion.span
-                    layoutId="aktif-nav-gostergesi"
-                    className="absolute inset-0 rounded-xl ring-1 ring-primary/20"
-                    transition={{ type: "spring", stiffness: 400, damping: 35 }}
-                  />
-                )}
-                <Icon className="h-4 w-4 shrink-0" />
-                <span className="relative">{oge.label}</span>
-              </Link>
+                <Link
+                  href={oge.href}
+                  className={cn(
+                    "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                    aktif
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
+                  )}
+                >
+                  {aktif && (
+                    <motion.span
+                      layoutId="aktif-nav-gostergesi"
+                      className="absolute inset-0 rounded-xl ring-1 ring-primary/20"
+                      transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                    />
+                  )}
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className="relative">{oge.label}</span>
+                </Link>
+              </div>
             );
           })}
 
