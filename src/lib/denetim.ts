@@ -57,6 +57,14 @@ export const EYLEM_META: Record<string, EylemMeta> = {
 
   STUDENT_DOCUMENT_UPLOAD: { etiket: "Belge Yüklendi", renk: "default", kategori: "Belge" },
   STUDENT_DOCUMENT_DELETE: { etiket: "Belge Silindi", renk: "destructive", kategori: "Belge" },
+
+  MESAJ_GONDER: { etiket: "Mesaj Gönderildi", renk: "default", kategori: "Mesajlaşma" },
+
+  SAGLIK_BILGISI_GUNCELLE: {
+    etiket: "Sağlık/Acil Durum Bilgisi Güncellendi",
+    renk: "secondary",
+    kategori: "Sağlık Bilgisi",
+  },
 };
 
 export function eylemEtiketi(eylem: string): string {

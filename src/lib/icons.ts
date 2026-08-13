@@ -25,6 +25,8 @@ import {
   Bell,
   Download,
   Upload,
+  MessageSquare,
+  HeartPulse,
   type LucideIcon,
 } from "lucide-react";
 
@@ -55,6 +57,8 @@ export const IKON_HARITASI = {
   Bell,
   Download,
   Upload,
+  MessageSquare,
+  HeartPulse,
 } satisfies Record<string, LucideIcon>;
 
 export type IkonAdi = keyof typeof IKON_HARITASI;

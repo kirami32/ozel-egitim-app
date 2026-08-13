@@ -4,6 +4,7 @@ import { ArrowLeft, FileDown } from "lucide-react";
 import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { denetimKaydiOlustur } from "@/lib/audit";
+import { mesajlariOkunduIsaretle } from "@/lib/actions/mesajlar";
 import { Button } from "@/components/ui/button";
 import { OgrenciProfilGorunumu } from "@/components/ogrenci-profil-gorunumu";
 
@@ -44,6 +45,12 @@ export default async function VeliOgrenciDetayPage({
         orderBy: { createdAt: "desc" },
         include: { yukleyen: { select: { id: true, adSoyad: true, avatarSurum: true } } },
       },
+      mesajlar: {
+        orderBy: { createdAt: "asc" },
+        include: {
+          gonderen: { select: { id: true, adSoyad: true, rol: true, avatarSurum: true } },
+        },
+      },
     },
   });
 
@@ -55,6 +62,8 @@ export default async function VeliOgrenciDetayPage({
     hedefTur: "Student",
     hedefId: ogrenci.id,
   });
+
+  await mesajlariOkunduIsaretle(ogrenci.id, kullanici.id, kullanici.rol);
 
   return (
     <div className="space-y-6">
@@ -77,6 +86,9 @@ export default async function VeliOgrenciDetayPage({
         hedefler={ogrenci.hedefler}
         veliNotlari={ogrenci.veliNotlari}
         belgeler={ogrenci.belgeler}
+        mesajlar={ogrenci.mesajlar}
+        saglikBilgisi={ogrenci}
+        mesajVeSaglikDuzenlenebilir
         mevcutKullaniciId={kullanici.id}
         mevcutKullaniciRolu={kullanici.rol}
         ogretmenAdiGoster

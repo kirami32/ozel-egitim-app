@@ -52,6 +52,7 @@ enum BildirimTuru {
   HEDEF_TAMAMLANDI
   OGRENCI_ATANDI
   GUVENLIK_UYARISI
+  YENI_MESAJ
 }
 
 model Institution {
@@ -72,19 +73,19 @@ model Institution {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  adSoyad      String
-  email        String   @unique
-  sifreHash    String
-  rol          Role
-  aktifMi      Boolean  @default(true)
+  id          String    @id @default(cuid())
+  adSoyad     String
+  email       String    @unique
+  sifreHash   String
+  rol         Role
+  aktifMi     Boolean   @default(true)
   // Profil fotografi: istemcide 256x256 JPEG'e kucultulup data URL olarak saklanir.
   // avatarSurum, fotografin varligini ve surumunu tutar; listeleme sorgulari
   // 20KB'lik base64'u cekmeden sadece bu alani okuyup <img> src'sini kurabilir.
-  avatar       String?
-  avatarSurum  DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  avatar      String?
+  avatarSurum DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   institutionId String?
   institution   Institution? @relation(fields: [institutionId], references: [id], onDelete: SetNull)
@@ -105,16 +106,17 @@ model User {
   veliNotlariYazilan  ParentNote[]    @relation("VeliNotuYazari")
 
   bildirimler        Notification[]
-  programYuklenenler ScheduleSlot[]  @relation("ScheduleSlotOgretmen")
+  programYuklenenler ScheduleSlot[]    @relation("ScheduleSlotOgretmen")
   belgelerYuklenen   StudentDocument[] @relation("BelgeYukleyen")
+  mesajlarGonderilen Message[]         @relation("MesajGonderen")
 
   @@index([institutionId])
   @@map("users")
 }
 
 model Classroom {
-  id   String @id @default(cuid())
-  ad   String
+  id String @id @default(cuid())
+  ad String
 
   institutionId String
   institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
@@ -132,15 +134,22 @@ model Classroom {
 }
 
 model Student {
-  id             String    @id @default(cuid())
-  adSoyad        String
-  dogumTarihi    DateTime?
-  taniKategorisi String?
-  kayitTarihi    DateTime  @default(now())
-  aktifMi        Boolean   @default(true)
+  id                String    @id @default(cuid())
+  adSoyad           String
+  dogumTarihi       DateTime?
+  taniKategorisi    String?
+  kayitTarihi       DateTime  @default(now())
+  aktifMi           Boolean   @default(true)
+  // Saglik/acil durum bilgisi - ogretmen/mudur/veli tarafindan girilir,
+  // ogrenci profilinde one cikan bir kart olarak gosterilir.
+  allerjiler        String?
+  kullandigiIlaclar String?
+  saglikNotu        String?
+  acilKontakAdi     String?
+  acilKontakTelefon String?
   // Profil fotografi: ogretmen/mudur/admin tarafindan yuklenir.
-  avatar         String?
-  avatarSurum    DateTime?
+  avatar            String?
+  avatarSurum       DateTime?
 
   institutionId String
   institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
@@ -151,12 +160,13 @@ model Student {
   veliId String?
   veli   User?   @relation("StudentParent", fields: [veliId], references: [id], onDelete: SetNull)
 
-  sessionLogs SessionLog[]
+  sessionLogs       SessionLog[]
   attendanceRecords Attendance[]
-  hedefler Hedef[]
-  veliNotlari ParentNote[]
-  programSlotlari ScheduleSlot[]
-  belgeler StudentDocument[]
+  hedefler          Hedef[]
+  veliNotlari       ParentNote[]
+  programSlotlari   ScheduleSlot[]
+  belgeler          StudentDocument[]
+  mesajlar          Message[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -191,12 +201,12 @@ model Attendance {
 
 // Bireysellestirilmis Egitim Programi (BEP) hedefi
 model Hedef {
-  id        String        @id @default(cuid())
-  baslik    String
-  aciklama  String?
-  kategori  HedefKategori
-  durum     HedefDurum    @default(AKTIF)
-  hedefTarihi     DateTime?
+  id               String        @id @default(cuid())
+  baslik           String
+  aciklama         String?
+  kategori         HedefKategori
+  durum            HedefDurum    @default(AKTIF)
+  hedefTarihi      DateTime?
   tamamlanmaTarihi DateTime?
 
   studentId String
@@ -237,9 +247,9 @@ model HedefIlerleme {
 
 // Ogretmen/mudurden veliye tek yonlu, hizli bilgilendirme notu
 model ParentNote {
-  id      String  @id @default(cuid())
-  icerik  String
-  onemli  Boolean @default(false)
+  id     String  @id @default(cuid())
+  icerik String
+  onemli Boolean @default(false)
 
   studentId String
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
@@ -254,14 +264,34 @@ model ParentNote {
   @@map("parent_notes")
 }
 
+// Veli <-> ogretmen/mudur arasinda ogrenci baglaminda iki yonlu mesajlasma
+model Message {
+  id     String @id @default(cuid())
+  icerik String
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  gonderenId String
+  gonderen   User   @relation("MesajGonderen", fields: [gonderenId], references: [id], onDelete: Cascade)
+
+  // Karsi tarafin (gonderen olmayan taraf) mesaji acip okuyup okumadigi
+  okunduMu Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([studentId, createdAt])
+  @@map("messages")
+}
+
 // Uygulama ici bildirim - zil menusunde gosterilir
 model Notification {
-  id      String       @id @default(cuid())
-  tur     BildirimTuru
-  baslik  String
-  mesaj   String
-  link    String? // tiklaninca gidilecek yol, ornek: "/veli/ogrenci/xyz"
-  okunduMu Boolean     @default(false)
+  id       String       @id @default(cuid())
+  tur      BildirimTuru
+  baslik   String
+  mesaj    String
+  link     String? // tiklaninca gidilecek yol, ornek: "/veli/ogrenci/xyz"
+  okunduMu Boolean      @default(false)
 
   aliciId String
   alici   User   @relation(fields: [aliciId], references: [id], onDelete: Cascade)
@@ -275,9 +305,9 @@ model Notification {
 
 // Haftalik tekrar eden ders programi sablonu (belirli bir tarih degil, haftanin gunu)
 model ScheduleSlot {
-  id String @id @default(cuid())
+  id             String @id @default(cuid())
   // 1=Pazartesi ... 5=Cuma
-  gun Int
+  gun            Int
   baslangicSaati String // "09:00" bicimi, siralama/karsilastirma icin string yeterli
   bitisSaati     String
 
@@ -296,7 +326,7 @@ model ScheduleSlot {
 
 // Ogrenciye ait belge (resmi BEP formu, doktor raporu, degerlendirme evraki vb.)
 model StudentDocument {
-  id        String @id @default(cuid())
+  id        String  @id @default(cuid())
   dosyaAdi  String
   mimeTuru  String
   boyutBayt Int
@@ -327,17 +357,17 @@ model BehaviorTag {
 }
 
 model SessionLog {
-  id             String   @id @default(cuid())
-  tarih          DateTime @default(now())
-  islenenKonu    String?
-  verimlilikPuani Int     // 1-10
-  serbestNot     String?
+  id              String   @id @default(cuid())
+  tarih           DateTime @default(now())
+  islenenKonu     String?
+  verimlilikPuani Int // 1-10
+  serbestNot      String?
 
   studentId String
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   teacherId String
-  teacher   User    @relation("TeacherSessionLogs", fields: [teacherId], references: [id], onDelete: Cascade)
+  teacher   User   @relation("TeacherSessionLogs", fields: [teacherId], references: [id], onDelete: Cascade)
 
   behaviorTags SessionLogBehaviorTag[]
 
@@ -363,18 +393,18 @@ model SessionLogBehaviorTag {
 
 // KVKK: hassas veriye kim ne zaman eristi - denetim kaydi
 model AuditLog {
-  id         String   @id @default(cuid())
+  id        String   @id @default(cuid())
   // userId null olabilir: basarisiz giris denemesi olmayan/bilinmeyen bir
   // e-postayla yapilmis olabilir, ya da kullanici sonradan silinmis olabilir
   // (SetNull ile kayit korunur, denetim gecmisi asla silinmez).
-  userId     String?
-  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  eylem      String   // ornek: "STUDENT_VIEW", "SESSION_LOG_CREATE", "LOGIN_SUCCESS"
-  hedefTur   String   // ornek: "Student", "SessionLog", "Auth"
-  hedefId    String?
-  detay      Json?
-  ipAdresi   String?
-  createdAt  DateTime @default(now())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  eylem     String // ornek: "STUDENT_VIEW", "SESSION_LOG_CREATE", "LOGIN_SUCCESS"
+  hedefTur  String // ornek: "Student", "SessionLog", "Auth"
+  hedefId   String?
+  detay     Json?
+  ipAdresi  String?
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([hedefTur, hedefId])

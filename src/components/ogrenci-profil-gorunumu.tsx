@@ -11,6 +11,8 @@ import { DevamDurumuChart } from "@/components/devam-durumu-chart";
 import { HedeflerBolumu } from "@/components/hedefler-bolumu";
 import { VeliNotlariBolumu } from "@/components/veli-notlari-bolumu";
 import { BelgelerBolumu } from "@/components/belgeler-bolumu";
+import { MesajlasmaBolumu } from "@/components/mesajlasma-bolumu";
+import { SaglikBilgileriKarti } from "@/components/saglik-bilgileri-karti";
 import { DEVAM_DURUM_META, devamOraniHesapla } from "@/lib/devam";
 import { cn } from "@/lib/utils";
 import type {
@@ -79,6 +81,21 @@ interface BelgeVerisi {
   yukleyen: { id: string; adSoyad: string; avatarSurum: Date | null };
 }
 
+interface MesajVerisi {
+  id: string;
+  icerik: string;
+  createdAt: Date;
+  gonderen: { id: string; adSoyad: string; rol: Role; avatarSurum: Date | null };
+}
+
+interface SaglikBilgisiVerisi {
+  allerjiler: string | null;
+  kullandigiIlaclar: string | null;
+  saglikNotu: string | null;
+  acilKontakAdi: string | null;
+  acilKontakTelefon: string | null;
+}
+
 interface OgrenciProfilGorunumuProps {
   ogrenciId: string;
   adSoyad: string;
@@ -98,6 +115,14 @@ interface OgrenciProfilGorunumuProps {
   hedefler?: HedefVerisi[];
   veliNotlari?: VeliNotuVerisi[];
   belgeler?: BelgeVerisi[];
+  mesajlar?: MesajVerisi[];
+  saglikBilgisi?: SaglikBilgisiVerisi;
+  /**
+   * Mesaj gönderebilir mi / sağlık bilgisini düzenleyebilir mi — veli, öğretmen
+   * ve müdür için true. Resmi kayıtların aksine veli burada taraf olabilir;
+   * süper admin yine yalnızca izler.
+   */
+  mesajVeSaglikDuzenlenebilir?: boolean;
   mevcutKullaniciId: string;
   mevcutKullaniciRolu: Role;
   ustBaslikSagi?: React.ReactNode;
@@ -118,6 +143,15 @@ export function OgrenciProfilGorunumu({
   hedefler = [],
   veliNotlari = [],
   belgeler = [],
+  mesajlar = [],
+  saglikBilgisi = {
+    allerjiler: null,
+    kullandigiIlaclar: null,
+    saglikNotu: null,
+    acilKontakAdi: null,
+    acilKontakTelefon: null,
+  },
+  mesajVeSaglikDuzenlenebilir = false,
   mevcutKullaniciId,
   mevcutKullaniciRolu,
   ustBaslikSagi,
@@ -209,6 +243,12 @@ export function OgrenciProfilGorunumu({
         )}
       </div>
 
+      <SaglikBilgileriKarti
+        ogrenciId={ogrenciId}
+        bilgi={saglikBilgisi}
+        duzenlenebilir={mesajVeSaglikDuzenlenebilir}
+      />
+
       <HedeflerBolumu
         ogrenciId={ogrenciId}
         hedefler={hedefler}
@@ -221,6 +261,13 @@ export function OgrenciProfilGorunumu({
         yazilabilir={notVeHedefDuzenlenebilir}
         mevcutKullaniciId={mevcutKullaniciId}
         mevcutKullaniciRolu={mevcutKullaniciRolu}
+      />
+
+      <MesajlasmaBolumu
+        ogrenciId={ogrenciId}
+        mesajlar={mesajlar}
+        gonderebilir={mesajVeSaglikDuzenlenebilir}
+        mevcutKullaniciId={mevcutKullaniciId}
       />
 
       <BelgelerBolumu

@@ -46,6 +46,12 @@ export default async function AdminOgrenciDetayPage({
         orderBy: { createdAt: "desc" },
         include: { yukleyen: { select: { id: true, adSoyad: true, avatarSurum: true } } },
       },
+      mesajlar: {
+        orderBy: { createdAt: "asc" },
+        include: {
+          gonderen: { select: { id: true, adSoyad: true, rol: true, avatarSurum: true } },
+        },
+      },
     },
   });
 
@@ -81,6 +87,8 @@ export default async function AdminOgrenciDetayPage({
         hedefler={ogrenci.hedefler}
         veliNotlari={ogrenci.veliNotlari}
         belgeler={ogrenci.belgeler}
+        mesajlar={ogrenci.mesajlar}
+        saglikBilgisi={ogrenci}
         mevcutKullaniciId={kullanici.id}
         mevcutKullaniciRolu={kullanici.rol}
         ogretmenAdiGoster
