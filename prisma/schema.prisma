@@ -269,6 +269,14 @@ model Message {
   id     String @id @default(cuid())
   icerik String
 
+  // Opsiyonel ek (fotograf/PDF/belge) - avatar/belge ile ayni data URL deseni.
+  // Liste sorgusu agirlasmasin diye ekVerisi'ni sayfa yuklerken cekmiyoruz,
+  // /api/mesaj-ek/[id] uzerinden ayrica serviyoruz.
+  ekAdi       String?
+  ekMimeTuru  String?
+  ekBoyutBayt Int?
+  ekVerisi    String?
+
   studentId String
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 

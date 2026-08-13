@@ -7,6 +7,7 @@ import { oturumGerekli } from "@/lib/rbac";
 import { denetimKaydiOlustur } from "@/lib/audit";
 import { bildirimOlustur } from "@/lib/bildirim";
 import { ogrenciGorulebilirMi } from "@/lib/ogrenci-erisim";
+import { AZAMI_BELGE_VERI_UZUNLUGU, IZIN_VERILEN_BELGE_TURLERI } from "@/lib/belge";
 import type { Role } from "@/generated/prisma/enums";
 
 const ROL_YOLLARI = ["/admin", "/mudur", "/ogretmen", "/veli"];
@@ -17,9 +18,21 @@ function ogrenciYollariniTazele(ogrenciId: string) {
   }
 }
 
-const mesajSemasi = z.object({
-  icerik: z.string().trim().min(1, "Mesaj boş olamaz").max(2000),
-});
+const mimeTuruSemasi = z.enum(IZIN_VERILEN_BELGE_TURLERI);
+
+const mesajSemasi = z
+  .object({
+    icerik: z.string().trim().max(2000),
+    ekAdi: z.string().trim().max(200).optional(),
+    ekVerisi: z
+      .string()
+      .max(AZAMI_BELGE_VERI_UZUNLUGU, "Dosya çok büyük (en fazla 5 MB).")
+      .optional(),
+  })
+  .refine((v) => v.icerik.length > 0 || v.ekVerisi, {
+    message: "Mesaj boş olamaz",
+    path: ["icerik"],
+  });
 
 /**
  * Veli <-> öğretmen/müdür arasında öğrenci bağlamında iki yönlü mesajlaşma.
@@ -31,7 +44,20 @@ export async function mesajGonder(ogrenciId: string, formData: FormData) {
   const yetkili = await ogrenciGorulebilirMi(kullanici, ogrenciId);
   if (!yetkili) throw new Error("Bu öğrenciye mesaj gönderme yetkiniz yok.");
 
-  const veri = mesajSemasi.parse({ icerik: formData.get("icerik") });
+  const veri = mesajSemasi.parse({
+    icerik: formData.get("icerik") ?? "",
+    ekAdi: formData.get("ekAdi") || undefined,
+    ekVerisi: formData.get("ekVerisi") || undefined,
+  });
+
+  let ekMimeTuru: string | null = null;
+  let ekBoyutBayt: number | null = null;
+  if (veri.ekVerisi) {
+    const eslesme = /^data:([^;]+);base64,(.+)$/.exec(veri.ekVerisi);
+    if (!eslesme) throw new Error("Geçersiz dosya.");
+    ekMimeTuru = mimeTuruSemasi.parse(eslesme[1]);
+    ekBoyutBayt = Math.floor((eslesme[2].length * 3) / 4);
+  }
 
   const ogrenci = await prisma.student.findUnique({
     where: { id: ogrenciId },
@@ -48,6 +74,10 @@ export async function mesajGonder(ogrenciId: string, formData: FormData) {
       studentId: ogrenciId,
       icerik: veri.icerik,
       gonderenId: kullanici.id,
+      ekAdi: veri.ekVerisi ? (veri.ekAdi ?? "Dosya") : null,
+      ekMimeTuru,
+      ekBoyutBayt,
+      ekVerisi: veri.ekVerisi ?? null,
     },
   });
 
@@ -71,12 +101,14 @@ export async function mesajGonder(ogrenciId: string, formData: FormData) {
     aliciIdler.push({ id: ogrenci.classroom.teacherId, onEk: "ogretmen" });
   }
 
+  const bildirimMetni = veri.icerik.length > 0 ? veri.icerik.slice(0, 140) : `📎 ${mesaj.ekAdi}`;
+
   for (const { id: aliciId, onEk } of aliciIdler) {
     await bildirimOlustur({
       aliciId,
       tur: "YENI_MESAJ",
       baslik: `${ogrenci.adSoyad} hakkında yeni bir mesaj`,
-      mesaj: veri.icerik.slice(0, 140),
+      mesaj: bildirimMetni,
       link: `/${onEk}/ogrenci/${ogrenciId}`,
     });
   }

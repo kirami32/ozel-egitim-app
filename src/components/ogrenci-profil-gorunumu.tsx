@@ -85,6 +85,9 @@ interface MesajVerisi {
   id: string;
   icerik: string;
   createdAt: Date;
+  ekAdi: string | null;
+  ekMimeTuru: string | null;
+  ekBoyutBayt: number | null;
   gonderen: { id: string; adSoyad: string; rol: Role; avatarSurum: Date | null };
 }
 

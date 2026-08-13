@@ -48,7 +48,13 @@ export default async function AdminOgrenciDetayPage({
       },
       mesajlar: {
         orderBy: { createdAt: "asc" },
-        include: {
+        select: {
+          id: true,
+          icerik: true,
+          createdAt: true,
+          ekAdi: true,
+          ekMimeTuru: true,
+          ekBoyutBayt: true,
           gonderen: { select: { id: true, adSoyad: true, rol: true, avatarSurum: true } },
         },
       },
