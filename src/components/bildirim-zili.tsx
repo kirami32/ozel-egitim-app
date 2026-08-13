@@ -95,7 +95,11 @@ export function BildirimZili({
           </AnimatePresence>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 p-0">
+      <DropdownMenuContent
+        align="end"
+        className="w-[min(20rem,calc(100vw-2rem))] p-0"
+      >
+
         <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
           <p className="text-sm font-semibold">Bildirimler</p>
           <Link

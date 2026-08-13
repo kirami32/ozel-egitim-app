@@ -198,7 +198,7 @@ export function BelgelerBolumu({
                     onClick={() => sil(belge.id)}
                     disabled={isPending}
                     aria-label="Belgeyi sil"
-                    className="shrink-0 rounded-lg p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+                    className="shrink-0 rounded-lg p-1.5 text-muted-foreground opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive md:opacity-0 md:group-hover:opacity-100"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>

@@ -143,6 +143,10 @@ export function DashboardShell({
               </span>
             </span>
           </Link>
+          <SignOutButton
+            iconOnly
+            className="text-muted-foreground hover:text-foreground md:hidden"
+          />
         </header>
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
