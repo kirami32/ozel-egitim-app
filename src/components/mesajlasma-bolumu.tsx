@@ -59,7 +59,7 @@ function MesajEki({ mesaj }: { mesaj: Mesaj }) {
         <img
           src={url}
           alt={mesaj.ekAdi}
-          className="max-h-48 max-w-full rounded-xl border border-border/60 object-cover"
+          className="h-auto max-h-48 min-h-16 w-auto min-w-16 max-w-full rounded-xl border border-border/60 object-cover"
         />
       </a>
     );
