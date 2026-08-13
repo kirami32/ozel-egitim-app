@@ -252,10 +252,11 @@ export function OgrenciProfilGorunumu({
         duzenlenebilir={mesajVeSaglikDuzenlenebilir}
       />
 
-      <HedeflerBolumu
+      <MesajlasmaBolumu
         ogrenciId={ogrenciId}
-        hedefler={hedefler}
-        yonetilebilir={notVeHedefDuzenlenebilir}
+        mesajlar={mesajlar}
+        gonderebilir={mesajVeSaglikDuzenlenebilir}
+        mevcutKullaniciId={mevcutKullaniciId}
       />
 
       <VeliNotlariBolumu
@@ -266,11 +267,10 @@ export function OgrenciProfilGorunumu({
         mevcutKullaniciRolu={mevcutKullaniciRolu}
       />
 
-      <MesajlasmaBolumu
+      <HedeflerBolumu
         ogrenciId={ogrenciId}
-        mesajlar={mesajlar}
-        gonderebilir={mesajVeSaglikDuzenlenebilir}
-        mevcutKullaniciId={mevcutKullaniciId}
+        hedefler={hedefler}
+        yonetilebilir={notVeHedefDuzenlenebilir}
       />
 
       <BelgelerBolumu
