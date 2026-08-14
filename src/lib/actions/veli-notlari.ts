@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma";
 import { oturumGerekli } from "@/lib/rbac";
 import { denetimKaydiOlustur } from "@/lib/audit";
 import { bildirimOlustur } from "@/lib/bildirim";
+import { emailGonder, uygulamaUrl } from "@/lib/email";
+import { veliNotuEmailHtml, veliNotuEmailKonusu } from "@/lib/email-sablonlari";
 import { ogrenciYonetilebilirMi } from "@/lib/ogrenci-erisim";
 
 const ROL_YOLLARI = ["/admin", "/mudur", "/ogretmen", "/veli"];
@@ -44,7 +46,11 @@ export async function veliNotuEkle(ogrenciId: string, formData: FormData) {
       onemli: veri.onemli,
       yazarId: kullanici.id,
     },
-    include: { student: { select: { adSoyad: true, veliId: true } } },
+    include: {
+      student: {
+        select: { adSoyad: true, veliId: true, veli: { select: { email: true } } },
+      },
+    },
   });
 
   await denetimKaydiOlustur({
@@ -56,13 +62,29 @@ export async function veliNotuEkle(ogrenciId: string, formData: FormData) {
   });
 
   if (not.student.veliId) {
+    const link = `/veli/ogrenci/${ogrenciId}`;
+
     await bildirimOlustur({
       aliciId: not.student.veliId,
       tur: "VELI_NOTU",
       baslik: `${not.student.adSoyad} için yeni bir not var`,
       mesaj: veri.icerik.slice(0, 140),
-      link: `/veli/ogrenci/${ogrenciId}`,
+      link,
     });
+
+    if (not.student.veli?.email) {
+      await emailGonder({
+        to: not.student.veli.email,
+        subject: veliNotuEmailKonusu(not.student.adSoyad),
+        html: veliNotuEmailHtml({
+          ogrenciAdi: not.student.adSoyad,
+          yazarAdi: kullanici.adSoyad,
+          icerik: veri.icerik,
+          onemli: veri.onemli,
+          link: uygulamaUrl(link),
+        }),
+      });
+    }
   }
 
   ogrenciYollariniTazele(ogrenciId);

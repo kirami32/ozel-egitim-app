@@ -5,6 +5,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { oturumGerekli } from "@/lib/rbac";
 import { denetimKaydiOlustur } from "@/lib/audit";
+import { emailGonder, uygulamaUrl } from "@/lib/email";
+import { dersKaydiEmailHtml, dersKaydiEmailKonusu } from "@/lib/email-sablonlari";
 
 const dersKaydiSemasi = z.object({
   studentId: z.string().min(1),
@@ -27,6 +29,7 @@ export async function dersKaydiOlustur(formData: FormData) {
 
   const ogrenci = await prisma.student.findFirst({
     where: { id: veri.studentId, classroom: { teacherId: kullanici.id } },
+    select: { adSoyad: true, veli: { select: { email: true } } },
   });
   if (!ogrenci) {
     throw new Error("Bu öğrenci için kayıt ekleme yetkiniz yok.");
@@ -52,6 +55,23 @@ export async function dersKaydiOlustur(formData: FormData) {
     hedefId: kayit.id,
     detay: { studentId: veri.studentId },
   });
+
+  if (ogrenci.veli?.email) {
+    const link = `/veli/ogrenci/${veri.studentId}`;
+    await emailGonder({
+      to: ogrenci.veli.email,
+      subject: dersKaydiEmailKonusu(ogrenci.adSoyad),
+      html: dersKaydiEmailHtml({
+        ogrenciAdi: ogrenci.adSoyad,
+        ogretmenAdi: kullanici.adSoyad,
+        tarih: kayit.tarih,
+        islenenKonu: veri.islenenKonu || null,
+        verimlilikPuani: veri.verimlilikPuani,
+        serbestNot: veri.serbestNot || null,
+        link: uygulamaUrl(link),
+      }),
+    });
+  }
 
   revalidatePath(`/ogretmen/ogrenci/${veri.studentId}`);
   revalidatePath("/ogretmen");
