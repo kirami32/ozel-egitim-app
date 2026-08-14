@@ -11,7 +11,9 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:migrate": "prisma migrate deploy",
     "docs": "tsx scripts/dokuman-olustur.tsx",
-    "docs:sunum": "tsx scripts/tanitim-sunumu-olustur.tsx"
+    "docs:sunum": "tsx scripts/tanitim-sunumu-olustur.tsx",
+    "docs:kitapcik": "tsx scripts/tanitim-kitapcigi-olustur.tsx",
+    "docs:ekran": "tsx scripts/ekran-goruntusu-al.tsx"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.7.1",
@@ -53,6 +55,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
     "prisma": "^7.9.1",
+    "puppeteer-core": "^25.7.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.11",
     "typescript": "^5"
