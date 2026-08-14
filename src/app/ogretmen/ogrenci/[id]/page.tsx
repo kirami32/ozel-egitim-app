@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { oturumGerekli } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { denetimKaydiOlustur } from "@/lib/audit";
+import { mesajlariOkunduIsaretle } from "@/lib/actions/mesajlar";
 import { OgrenciProfilGorunumu } from "@/components/ogrenci-profil-gorunumu";
 import { DersKaydiForm } from "@/components/ders-kaydi-form";
 
@@ -42,6 +43,18 @@ export default async function OgrenciProfilPage({
         orderBy: { createdAt: "desc" },
         include: { yukleyen: { select: { id: true, adSoyad: true, avatarSurum: true } } },
       },
+      mesajlar: {
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true,
+          icerik: true,
+          createdAt: true,
+          ekAdi: true,
+          ekMimeTuru: true,
+          ekBoyutBayt: true,
+          gonderen: { select: { id: true, adSoyad: true, rol: true, avatarSurum: true } },
+        },
+      },
     },
   });
 
@@ -53,6 +66,8 @@ export default async function OgrenciProfilPage({
     hedefTur: "Student",
     hedefId: ogrenci.id,
   });
+
+  await mesajlariOkunduIsaretle(ogrenci.id, kullanici.id, kullanici.rol);
 
   const davranisEtiketleri = await prisma.behaviorTag.findMany({ orderBy: { ad: "asc" } });
 
@@ -81,6 +96,9 @@ export default async function OgrenciProfilPage({
             hedefler={ogrenci.hedefler}
             veliNotlari={ogrenci.veliNotlari}
             belgeler={ogrenci.belgeler}
+            mesajlar={ogrenci.mesajlar}
+            saglikBilgisi={ogrenci}
+            mesajVeSaglikDuzenlenebilir
             notVeHedefDuzenlenebilir
             mevcutKullaniciId={kullanici.id}
             mevcutKullaniciRolu={kullanici.rol}

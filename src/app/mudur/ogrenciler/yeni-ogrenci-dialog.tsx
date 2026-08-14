@@ -98,7 +98,7 @@ export function YeniOgrenciDialog({
               <p className="text-sm text-destructive">{errors.adSoyad.message}</p>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="dogumTarihi">Doğum Tarihi</Label>
               <Input id="dogumTarihi" type="date" {...register("dogumTarihi")} />

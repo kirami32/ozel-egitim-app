@@ -255,7 +255,10 @@ export function HedefKarti({
                 İlerleme Ekle
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-80">
+            <PopoverContent
+              align="start"
+              className="w-[min(20rem,calc(100vw-2rem))]"
+            >
               <form action={ilerlemeEkle} className="space-y-3">
                 <p className="text-xs font-medium text-muted-foreground">
                   Bugünkü başarı düzeyi

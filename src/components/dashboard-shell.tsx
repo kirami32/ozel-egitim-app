@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, GraduationCap, Settings, UserRound } from "lucide-react";
+import { GraduationCap, Settings } from "lucide-react";
 import { motion } from "framer-motion";
-import { Badge } from "@/components/ui/badge";
 import { SignOutButton } from "@/components/sign-out-button";
 import { KisiAvatari } from "@/components/kisi-avatari";
 import { TemaDegistirici } from "@/components/tema-degistirici";
@@ -37,12 +36,6 @@ interface DashboardShellProps {
   children: React.ReactNode;
 }
 
-const HESAP_OGELERI = [
-  { href: "/profil", label: "Profilim", Icon: UserRound },
-  { href: "/bildirimler", label: "Bildirimler", Icon: Bell },
-  { href: "/ayarlar", label: "Ayarlar", Icon: Settings },
-];
-
 export function DashboardShell({
   navOgeleri,
   rolEtiketi,
@@ -58,6 +51,8 @@ export function DashboardShell({
   const aktifMi = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");
 
+  const cokGrupluMu = new Set(navOgeleri.map((o) => o.grup)).size > 1;
+
   return (
     <div className="flex min-h-screen w-full bg-background">
       {/* Masaüstü kenar çubuğu */}
@@ -70,88 +65,70 @@ export function DashboardShell({
             <p className="truncate text-sm font-semibold">Özel Eğitim</p>
             <p className="truncate text-xs text-muted-foreground">Takip Sistemi</p>
           </div>
-          <BildirimZili ilkBildirimler={ilkBildirimler} ilkSayac={ilkOkunmamisSayac} />
         </div>
 
         <nav className="flex flex-1 flex-col gap-1">
-          {navOgeleri.map((oge) => {
+          {navOgeleri.map((oge, i) => {
             const aktif = aktifMi(oge.href);
             const Icon = IKON_HARITASI[oge.icon];
+            const grupDegisti = cokGrupluMu && oge.grup !== navOgeleri[i - 1]?.grup;
             return (
-              <Link
-                key={oge.href}
-                href={oge.href}
-                className={cn(
-                  "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                  aktif
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
+              <div key={oge.href}>
+                {grupDegisti && (
+                  <p
+                    className={cn(
+                      "px-3 pb-1 text-[10px] font-semibold tracking-wider text-muted-foreground/60 uppercase",
+                      i !== 0 && "mt-3"
+                    )}
+                  >
+                    {oge.grup}
+                  </p>
                 )}
-              >
-                {aktif && (
-                  <motion.span
-                    layoutId="aktif-nav-gostergesi"
-                    className="absolute inset-0 rounded-xl ring-1 ring-primary/20"
-                    transition={{ type: "spring", stiffness: 400, damping: 35 }}
-                  />
-                )}
-                <Icon className="h-4 w-4 shrink-0" />
-                <span className="relative">{oge.label}</span>
-              </Link>
-            );
-          })}
-
-          <div className="my-3 border-t border-sidebar-border" />
-
-          {HESAP_OGELERI.map(({ href, label, Icon }) => {
-            const aktif = aktifMi(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                  aktif
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
-                )}
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                {label}
-              </Link>
+                <Link
+                  href={oge.href}
+                  className={cn(
+                    "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                    aktif
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
+                  )}
+                >
+                  {aktif && (
+                    <motion.span
+                      layoutId="aktif-nav-gostergesi"
+                      className="absolute inset-0 rounded-xl ring-1 ring-primary/20"
+                      transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                    />
+                  )}
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className="relative">{oge.label}</span>
+                </Link>
+              </div>
             );
           })}
         </nav>
 
-        <div className="mt-auto space-y-3 border-t border-sidebar-border pt-4">
-          <Link
-            href="/profil"
-            className="flex items-center gap-2 rounded-xl px-2 py-1.5 transition-colors hover:bg-sidebar-accent/60"
-          >
-            <KisiAvatari
-              tur="kullanici"
-              id={kullaniciId}
-              adSoyad={kullaniciAdi}
-              avatarSurum={avatarSurum}
-            />
-            <div className="min-w-0 leading-tight">
-              <p className="truncate text-sm font-medium">{kullaniciAdi}</p>
-              <Badge variant="secondary" className="mt-0.5 text-[10px]">
-                {rolEtiketi}
-              </Badge>
-            </div>
-          </Link>
-          <div className="flex items-center gap-2">
-            <SignOutButton className="flex-1 justify-start" />
-            <TemaDegistirici />
-          </div>
+        <div className="mt-auto border-t border-sidebar-border pt-4">
+          <SignOutButton className="w-full justify-start" />
         </div>
       </aside>
 
       <div className="flex min-h-screen flex-1 flex-col pb-20 md:pb-0">
-        {/* Mobil üst çubuk — profil/ayarlar mobilde buradan erişiliyor */}
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-sidebar-border bg-sidebar/95 px-4 py-2.5 backdrop-blur md:hidden">
-          <Link href="/profil" className="flex min-w-0 items-center gap-2">
+        {/* Üst çubuk — profil ve bildirimler burada, sağ üstte, tüm ekran boyutlarında */}
+        <header className="sticky top-0 z-30 flex items-center justify-end gap-1.5 border-b border-sidebar-border bg-sidebar/95 px-4 py-2.5 backdrop-blur">
+          <BildirimZili ilkBildirimler={ilkBildirimler} ilkSayac={ilkOkunmamisSayac} />
+          <TemaDegistirici />
+          <Link
+            href="/ayarlar"
+            aria-label="Ayarlar"
+            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-foreground"
+          >
+            <Settings className="h-4 w-4" />
+          </Link>
+          <Link
+            href="/profil"
+            className="ml-1 flex min-w-0 items-center gap-2 rounded-xl py-1 pr-2 pl-1 transition-colors hover:bg-sidebar-accent/60"
+          >
             <KisiAvatari
               tur="kullanici"
               id={kullaniciId}
@@ -159,19 +136,17 @@ export function DashboardShell({
               avatarSurum={avatarSurum}
               size="sm"
             />
-            <span className="truncate text-sm font-medium">{kullaniciAdi}</span>
+            <span className="hidden min-w-0 leading-tight sm:block">
+              <span className="block truncate text-sm font-medium">{kullaniciAdi}</span>
+              <span className="block truncate text-[11px] text-muted-foreground">
+                {rolEtiketi}
+              </span>
+            </span>
           </Link>
-          <div className="flex items-center gap-1">
-            <BildirimZili ilkBildirimler={ilkBildirimler} ilkSayac={ilkOkunmamisSayac} />
-            <TemaDegistirici />
-            <Link
-              href="/ayarlar"
-              aria-label="Ayarlar"
-              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-foreground"
-            >
-              <Settings className="h-4 w-4" />
-            </Link>
-          </div>
+          <SignOutButton
+            iconOnly
+            className="text-muted-foreground hover:text-foreground md:hidden"
+          />
         </header>
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>

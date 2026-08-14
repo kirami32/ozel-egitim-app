@@ -102,8 +102,8 @@ export function HaftalikProgram({
                         disabled={isPending}
                         aria-label="Programdan kaldır"
                         className={cn(
-                          "shrink-0 rounded-lg p-1 text-muted-foreground opacity-0 transition-opacity",
-                          "hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+                          "shrink-0 rounded-lg p-1 text-muted-foreground opacity-100 transition-opacity",
+                          "hover:bg-destructive/10 hover:text-destructive md:opacity-0 md:group-hover:opacity-100"
                         )}
                       >
                         <Trash2 className="h-3.5 w-3.5" />

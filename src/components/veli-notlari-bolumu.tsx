@@ -160,7 +160,7 @@ export function VeliNotlariBolumu({
                     size="sm"
                     className="mt-0.5 shrink-0"
                   />
-                  <div className="min-w-0 flex-1">
+                  <div className={cn("min-w-0 flex-1", silebilir && "pr-7")}>
                     <div className="flex items-center gap-1.5">
                       <p className="text-xs font-semibold">{not.yazar.adSoyad}</p>
                       {not.onemli && (
@@ -178,7 +178,7 @@ export function VeliNotlariBolumu({
                       onClick={() => notSil(not.id)}
                       disabled={isPending}
                       aria-label="Notu sil"
-                      className="absolute top-2 right-2 rounded-lg p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+                      className="absolute top-2 right-2 rounded-lg p-1 text-muted-foreground opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive md:opacity-0 md:group-hover:opacity-100"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
