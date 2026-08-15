@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { GirisForm } from "@/components/giris-form";
 import { GirisHero } from "@/components/giris-hero";
 import { GirisArkaplan } from "@/components/giris-arkaplan";
+import { GirisMiniGaleri } from "@/components/giris-mini-galeri";
 import type { Role } from "@/generated/prisma/enums";
 
 const ROL_ANA_SAYFA: Record<Role, string> = {
@@ -21,7 +22,7 @@ export default async function GirisPage() {
   }
 
   return (
-    <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-gradient-to-br from-[oklch(0.94_0.03_195)] via-background to-[oklch(0.95_0.035_55)] p-6">
+    <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-background p-6">
       <GirisArkaplan />
 
       <div className="relative z-10 grid w-full max-w-5xl items-stretch gap-8 lg:grid-cols-2">
@@ -29,6 +30,7 @@ export default async function GirisPage() {
 
         <div className="flex w-full max-w-md flex-col justify-center justify-self-center">
           <div className="mb-8 flex flex-col items-center text-center">
+            <GirisMiniGaleri />
             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
               <GraduationCap className="h-7 w-7" />
             </div>
@@ -40,7 +42,7 @@ export default async function GirisPage() {
             </p>
           </div>
 
-          <div className="rounded-3xl border border-white/60 bg-card/80 p-8 shadow-xl shadow-black/5 backdrop-blur-xl dark:border-white/10 dark:bg-card/70">
+          <div className="rounded-3xl border border-white/60 bg-card/85 p-8 shadow-xl shadow-black/5 backdrop-blur-xl dark:border-white/10 dark:bg-card/75">
             <Suspense>
               <GirisForm />
             </Suspense>

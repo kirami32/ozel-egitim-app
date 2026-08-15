@@ -1,10 +1,28 @@
+import Image from "next/image";
+import oyunTerapisi from "../../public/gorseller/oyun-terapisi.webp";
+
 /**
- * Giriş sayfasının dekoratif arka planı: soluk bir nokta deseni ve yavaşça
- * sürüklenen üç bulanık renk küresi. Tamamen CSS — client bundle'a maliyeti yok.
+ * Giriş sayfasının arka planı. Altta yumuşatılmış bir sınıf fotoğrafı durur —
+ * masaüstünde solda zaten fotoğraflı hero olduğu için burada çok soluk kalır,
+ * mobilde ise sayfanın tek görseli olduğundan biraz daha belirgindir.
+ * Üstüne marka renginde bir örtü, soluk nokta deseni ve sürüklenen renk
+ * küreleri binerek metnin okunurluğunu korur.
  */
 export function GirisArkaplan() {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      <Image
+        src={oyunTerapisi}
+        alt=""
+        fill
+        sizes="100vw"
+        className="scale-110 object-cover opacity-45 blur-lg lg:opacity-[0.14] dark:opacity-25 dark:lg:opacity-[0.08]"
+        placeholder="blur"
+      />
+
+      {/* Fotoğrafın üzerini marka rengiyle yumuşatan örtü */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[oklch(0.94_0.03_195)]/70 via-background/65 to-[oklch(0.95_0.035_55)]/70 lg:from-[oklch(0.94_0.03_195)]/88 lg:via-background/85 lg:to-[oklch(0.95_0.035_55)]/88 dark:from-background/85 dark:via-background/80 dark:to-background/85" />
+
       <div className="arkaplan-nokta absolute inset-0" />
 
       {/* Teal küre — sol üst */}
