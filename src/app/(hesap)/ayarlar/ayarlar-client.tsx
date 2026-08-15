@@ -7,12 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { useTercih } from "@/lib/gorunum-tercih";
 import {
   HAREKET_ANAHTARI,
   HAREKETSIZ_SINIFI,
   YOGUN_SINIFI,
   YOGUNLUK_ANAHTARI,
-  tercihAcikMi,
   tercihiDegistir,
   tercihleriDinle,
   temaDegistiBildir,
@@ -24,14 +24,6 @@ const TEMA_SECENEKLERI = [
   { deger: "dark", etiket: "Koyu", Icon: Moon },
   { deger: "system", etiket: "Sistem", Icon: Monitor },
 ] as const;
-
-function useTercih(sinif: string) {
-  return useSyncExternalStore(
-    tercihleriDinle,
-    () => tercihAcikMi(sinif),
-    () => false
-  );
-}
 
 export function AyarlarClient() {
   const { setTheme } = useTheme();

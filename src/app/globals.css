@@ -239,11 +239,48 @@
   will-change: transform;
 }
 
+/* Giriş ekranında iki bölmeyi ayıran çizgi üzerinde aşağı süzülen parlama. */
+@keyframes ayirici-suzul {
+  0% {
+    top: -35%;
+    opacity: 0;
+  }
+  15%,
+  70% {
+    opacity: 0.85;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+.giris-ayirici-parlama {
+  animation: ayirici-suzul 7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  will-change: top;
+}
+
+/* Uygulama içi "hareketi azalt" tercihi: yukarıdaki genel kural animasyonu
+   0.01ms'ye indirip parlamayı bitiş karesinde (ekranın altında, görünmez)
+   bırakırdı; onun yerine çizginin ortasında sabit bir vurgu olarak duruyor. */
+.hareket-azalt .giris-ayirici-parlama {
+  animation: none !important;
+  top: 33%;
+  opacity: 0.5;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .arkaplan-kure,
+  .giris-ayirici-parlama,
   .btn-glow,
   .btn-glow::after {
     animation: none;
+  }
+
+  /* Animasyon durunca parlama, çizginin ortasında sabit bir vurgu olarak kalır. */
+  .giris-ayirici-parlama {
+    top: 33%;
+    opacity: 0.5;
   }
 }
 
