@@ -12,26 +12,18 @@ import {
   HAREKETSIZ_SINIFI,
   YOGUN_SINIFI,
   YOGUNLUK_ANAHTARI,
-  tercihAcikMi,
   tercihiDegistir,
   tercihleriDinle,
   temaDegistiBildir,
   temaTercihi,
 } from "@/lib/gorunum";
+import { useTercih } from "@/lib/gorunum-tercih";
 
 const TEMA_SECENEKLERI = [
   { deger: "light", etiket: "Açık", Icon: Sun },
   { deger: "dark", etiket: "Koyu", Icon: Moon },
   { deger: "system", etiket: "Sistem", Icon: Monitor },
 ] as const;
-
-function useTercih(sinif: string) {
-  return useSyncExternalStore(
-    tercihleriDinle,
-    () => tercihAcikMi(sinif),
-    () => false
-  );
-}
 
 export function AyarlarClient() {
   const { setTheme } = useTheme();
