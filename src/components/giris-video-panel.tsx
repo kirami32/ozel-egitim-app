@@ -1,7 +1,14 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { GraduationCap, HeartHandshake, ShieldCheck, TrendingUp } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  GraduationCap,
+  HeartHandshake,
+  Pause,
+  Play,
+  ShieldCheck,
+  TrendingUp,
+} from "lucide-react";
 import { useHareketAzalt } from "@/lib/gorunum-tercih";
 
 const ROZETLER = [
@@ -10,27 +17,41 @@ const ROZETLER = [
   { Icon: ShieldCheck, metin: "KVKK uyumlu denetim kaydı" },
 ];
 
-/** Poster görselinin alındığı an — duraklatılan video buraya sarılır. */
-const DURAKLAMA_KARESI = 1.2;
 
 export function GirisVideoPanel() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hareketAzalt = useHareketAzalt();
+  const [oynuyor, setOynuyor] = useState(false);
+  // Kullanıcı düğmeye bastığı andan itibaren kararı sistem tercihini geçersiz
+  // kılar; yoksa tercih değiştiğinde seçimi elinden almış oluruz.
+  const [kullaniciKarari, setKullaniciKarari] = useState(false);
 
-  // Hareket azaltma tercihi açıkken video durdurulur. Klip karartmadan açıldığı
-  // için 0. saniye siyah; duraklatırken poster ile aynı kareye sarıyoruz.
+  // Oynatmayı bilinçli olarak `autoplay` niteliği değil bu efekt başlatıyor:
+  // nitelik oynatmaya başlar başlamaz poster kaybolur ve hareket azaltma açıkken
+  // videoyu hemen duraklattığımız için geriye klibin karartmayla açılan siyah
+  // ilk karesi kalırdı. Hiç başlatmayınca poster olduğu gibi durur.
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || kullaniciKarari) return;
     if (hareketAzalt) {
       video.pause();
-      if (video.readyState >= 1) video.currentTime = DURAKLAMA_KARESI;
     } else {
       void video.play().catch(() => {
         // Otomatik oynatma engellendiyse poster görünmeye devam eder.
       });
     }
-  }, [hareketAzalt]);
+  }, [hareketAzalt, kullaniciKarari]);
+
+  function oynatmayiDegistir() {
+    const video = videoRef.current;
+    if (!video) return;
+    setKullaniciKarari(true);
+    if (video.paused) {
+      void video.play().catch(() => setOynuyor(false));
+    } else {
+      video.pause();
+    }
+  }
 
   return (
     <div className="relative h-56 w-full shrink-0 sm:h-64 lg:absolute lg:inset-y-0 lg:left-0 lg:h-auto lg:w-[62%]">
@@ -47,11 +68,12 @@ export function GirisVideoPanel() {
           className="h-full w-full object-cover"
           src="/video/giris-tanitim.mp4"
           poster="/video/giris-tanitim-poster.webp"
-          autoPlay
           loop
           muted
           playsInline
           preload="metadata"
+          onPlay={() => setOynuyor(true)}
+          onPause={() => setOynuyor(false)}
           aria-label="Özel eğitim seansından görüntüler: bir öğretmen, öğrencisiyle eğitim materyalleri üzerinde birebir çalışıyor"
         />
 
@@ -64,8 +86,34 @@ export function GirisVideoPanel() {
         {/* Üstteki logonun okunması için hafif bir koyulaştırma */}
         <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[oklch(0.2_0.045_215)]/70 to-transparent" />
 
-        {/* İçerik — dar ekranda bant olduğu için yalnızca geniş ekranda */}
-        <div className="absolute inset-0 hidden flex-col justify-between p-10 text-white lg:flex xl:p-14">
+        {/* Oynatma denetimi. İşletim sisteminde "animasyonları kapat" açık olan
+            makinelerde video otomatik başlamaz; düğme durduğunda daha belirgin
+            durarak videonun kapalı değil yalnızca duraklatılmış olduğunu
+            gösteriyor. Duran içeriği durdurabilmek de bir erişilebilirlik
+            gereği (WCAG 2.2.2). */}
+        <button
+          type="button"
+          onClick={oynatmayiDegistir}
+          aria-label={oynuyor ? "Videoyu duraklat" : "Videoyu oynat"}
+          className={`absolute top-4 right-4 z-20 flex items-center gap-2 rounded-full border border-white/25 text-white backdrop-blur-md transition hover:bg-white/25 focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none lg:top-7 lg:right-8 ${
+            oynuyor
+              ? "bg-white/10 p-2.5 opacity-60 hover:opacity-100"
+              : "bg-white/20 py-2.5 pr-4 pl-3"
+          }`}
+        >
+          {oynuyor ? (
+            <Pause className="h-4 w-4" />
+          ) : (
+            <>
+              <Play className="h-4 w-4" />
+              <span className="text-xs font-medium">Videoyu oynat</span>
+            </>
+          )}
+        </button>
+
+        {/* İçerik — dar ekranda bant olduğu için yalnızca geniş ekranda.
+            Tüm paneli kapladığından tıklamaları oynatma düğmesine geçiriyor. */}
+        <div className="pointer-events-none absolute inset-0 hidden flex-col justify-between p-10 text-white lg:flex xl:p-14">
           <div className="flex items-center gap-3">
             <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
               <GraduationCap className="h-6 w-6" />
